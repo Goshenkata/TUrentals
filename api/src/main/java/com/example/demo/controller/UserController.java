@@ -7,6 +7,7 @@ import com.example.demo.dto.response.JWTDTO;
 import com.example.demo.dto.request.LoginDTO;
 import com.example.demo.service.UserService;
 import com.example.demo.utils.JWTUtils;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,17 +30,19 @@ public class UserController {
     private final JWTUtils jwtUtils;
 
     @PostMapping("register")
+    @Operation(summary = "Register a new user")
     public ResponseEntity<MessageResponseDTO> register(@Valid @RequestBody RegistrationDTO registrationDTO,
                                                        BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(
                     new MessageResponseDTO(400, bindingResult.getAllErrors().get(0).getDefaultMessage()));
         }
-        MessageResponseDTO result = userService.registerUser(registrationDTO);
+        MessageResponseDTO result = userService.registerUser(registrationDTO, RoleEnum.USER);
         return ResponseEntity.status(result.status()).body(result);
     }
 
     @PostMapping("login")
+    @Operation(summary = "Logs user and returns JWT token")
     public ResponseEntity<JWTDTO> login(@Valid @RequestBody LoginDTO loginDTO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().build();
@@ -52,5 +55,4 @@ public class UserController {
         String jwt = jwtUtils.generateToken(userDetails.getUsername(), roleEnum);
         return ResponseEntity.ok(new JWTDTO(userDetails.getUsername(), jwt, roleEnum.toString()));
     }
-
 }
