@@ -2,12 +2,14 @@ package com.example.demo.model;
 
 import com.example.demo.dto.enums.CategoryEnum;
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 @Entity
 @NoArgsConstructor
+@Data
 public class ItemEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

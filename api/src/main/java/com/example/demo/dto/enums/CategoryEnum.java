@@ -3,7 +3,6 @@ package com.example.demo.dto.enums;
 public enum CategoryEnum {
     FURNITURE,           // Tables, chairs, sofas, etc.
     DECOR,               // Vases, centerpieces, backdrops, etc.
-    ELECTRONICS,         // projectors, etc.
     LIGHTING,            // Lamps, LED strips, chandeliers, etc.
     TABLEWARE,           // Plates, glasses, cutlery, etc.
     LINENS,              // Tablecloths, napkins, chair covers, etc.
