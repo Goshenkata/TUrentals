@@ -49,6 +49,7 @@ public class AdminController {
         return ResponseEntity.ok(userService.getUsers(role, email));
     }
 
+    //todo change to id
     @DeleteMapping("deleteUser/{email}")
     @Operation(summary = "Delete a user by email")
     public ResponseEntity<MessageResponseDTO> deleteUser(@PathVariable String email) {

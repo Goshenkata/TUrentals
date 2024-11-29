@@ -16,10 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/user/")
 @RestController
@@ -55,4 +52,16 @@ public class UserController {
         String jwt = jwtUtils.generateToken(userDetails.getUsername(), roleEnum);
         return ResponseEntity.ok(new JWTDTO(userDetails.getUsername(), jwt, roleEnum.toString()));
     }
+
+    @PostMapping("isValid")
+    ResponseEntity<?> isValid(@RequestHeader("Authorization") String token) {
+        token = token.substring(7);
+        boolean result = jwtUtils.validateToken(token);
+        if (result) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
 }
