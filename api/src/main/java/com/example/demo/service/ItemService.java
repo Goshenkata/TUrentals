@@ -2,14 +2,19 @@ package com.example.demo.service;
 
 import com.example.demo.dto.common.MessageResponseDTO;
 import com.example.demo.dto.enums.CategoryEnum;
+import com.example.demo.dto.request.ItemAvailibilityChangeDTO;
 import com.example.demo.dto.request.ItemCreateDTO;
 import com.example.demo.model.ItemEntity;
+import com.example.demo.model.OrderEntity;
 import com.example.demo.repository.ItemRepository;
+import com.example.demo.repository.OrderRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -17,6 +22,7 @@ import java.util.List;
 public class ItemService {
     private final ModelMapper mapper;
     private final ItemRepository itemRepository;
+    private final OrderRepository orderRepository;
 
     public MessageResponseDTO createItem(ItemCreateDTO itemCreateDTO) {
         ItemEntity entity = mapper.map(itemCreateDTO, ItemEntity.class);
@@ -84,9 +90,42 @@ public class ItemService {
         item.setDescription(description);
         item.setPricePerDay(pricePerDay);
         item.setImageUrl(imageUrl);
-        item.setInitialQuantity(initialQuantity);
+        item.setQuantity(initialQuantity);
         item.setCategories(category);
         return item;
     }
 
+    public MessageResponseDTO changeAvailability(@Valid ItemAvailibilityChangeDTO itemAvailibilityChangeDTO) {
+
+        //if we are adding items we create an "order" in the past that will be "returned" at the date
+        //if we are removing items we create an at the date that won't be returned
+
+    }
+
+    // goes through the orders and returns how much of this item is available at the given date
+    public Integer getAvailabilityAtDate(Long itemId, LocalDate date) {
+        List<OrderEntity> orders = orderRepository.findOrdersByDeliveryDateBeforeAndItemId(date, itemId);
+        ItemEntity itemEntity = itemRepository.findById(itemId).get();
+        int initialQuantity = itemEntity.getQuantity();
+        for (OrderEntity order : orders) {
+            if (order.getReturnDate().isAfter(date)) {
+                initialQuantity -= order.getOrderedItems().get(itemEntity);
+            }
+        }
+        return initialQuantity;
+
+    }
+    //
+    public Integer getMaximumItemsAvailableInPeriod(Long itemId, LocalDate startDate, LocalDate endDate) {
+        Integer availability = getAvailabilityAtDate(itemId, startDate);
+        //cycle every day between start and end date
+        for (LocalDate date = startDate; date.isBefore(endDate); date = date.plusDays(1)) {
+            Integer currentAvailability = getAvailabilityAtDate(itemId, date);
+            if (currentAvailability < availability) {
+                availability = currentAvailability;
+            }
+        }
+        return availability;
+
+    }
 }

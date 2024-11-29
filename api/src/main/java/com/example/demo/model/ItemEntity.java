@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @Entity
 @NoArgsConstructor
@@ -24,7 +25,19 @@ public class ItemEntity {
     @Column
     private String imageUrl;
     @Column(nullable = false, columnDefinition = "integer default 0")
-    private Integer initialQuantity;
+    private Integer quantity;
     @Enumerated
     private CategoryEnum categories;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemEntity that = (ItemEntity) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
 }
