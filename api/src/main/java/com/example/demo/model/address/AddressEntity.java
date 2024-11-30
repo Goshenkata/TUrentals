@@ -25,4 +25,7 @@ public class AddressEntity {
     @JoinColumn(name = "postCodeId", nullable = false)
     @ManyToOne
     private PostCodeEntity postCode;
+
+    @Column(nullable = false)
+    private String street;
 }

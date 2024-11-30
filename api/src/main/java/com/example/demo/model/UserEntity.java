@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @Entity(name = "users")
 @Data
 @NoArgsConstructor
@@ -41,4 +43,7 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     @NonNull
     private RoleEnum role;
+
+    @OneToMany(mappedBy = "customer")
+    List<OrderEntity> orders;
 }

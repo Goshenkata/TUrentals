@@ -24,7 +24,7 @@ public class OrderController {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().build();
         }
-        var id = orderService.createOrder(orderCreateDTO, principal.getName());
-        return ResponseEntity.status(501).build();
+        MessageResponseDTO response =  orderService.createOrder(orderCreateDTO, principal.getName());
+        return ResponseEntity.status(response.status()).body(response);
     }
 }

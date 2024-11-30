@@ -5,6 +5,7 @@ import com.example.demo.model.UserEntity;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.CategoryService;
 import com.example.demo.service.ItemService;
+import com.example.demo.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +23,7 @@ public class DBInit implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
     private final ItemService itemService;
     private final CategoryService categoryService;
+    private final OrderService orderService;
 
     @Value("${admin.email}")
     private String adminEmail;
@@ -46,5 +48,6 @@ public class DBInit implements CommandLineRunner {
         }
         categoryService.seedCategories();
         itemService.seedItems();
+        orderService.seedOrders();
     }
 }

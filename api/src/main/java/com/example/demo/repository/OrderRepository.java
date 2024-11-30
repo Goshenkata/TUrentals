@@ -11,4 +11,10 @@ import java.util.List;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
+    //find all orders between two dates
+    @Query("SELECT o FROM OrderEntity o WHERE o.deliveryDate >= :startDate AND o.deliveryDate <= :endDate")
+    List<OrderEntity> findAllDeliveriesBetweenDates(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT o FROM OrderEntity o WHERE o.returnDate >= :startDate AND o.returnDate <= :endDate")
+    List<OrderEntity> findAllPickupsBetweenDates(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }

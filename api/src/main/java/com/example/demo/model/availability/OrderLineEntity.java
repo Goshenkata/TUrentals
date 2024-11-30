@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 public class OrderLineEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    Long id;
 
     @OneToOne
-    private ItemEntity item;
-    private int quantity;
+    ItemEntity item;
+    int quantity;
 }

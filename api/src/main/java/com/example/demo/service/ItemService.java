@@ -5,16 +5,17 @@ import com.example.demo.dto.request.ItemCreateDTO;
 import com.example.demo.dto.response.ItemDTO;
 import com.example.demo.model.CategoryEntity;
 import com.example.demo.model.ItemEntity;
+import com.example.demo.model.OrderEntity;
+import com.example.demo.model.availability.OrderLineEntity;
 import com.example.demo.model.availability.WarehouseLineEntity;
-import com.example.demo.repository.CategoryRepository;
-import com.example.demo.repository.ItemRepository;
-import com.example.demo.repository.OrderRepository;
-import com.example.demo.repository.WarehouseRepository;
+import com.example.demo.repository.*;
+import jakarta.validation.constraints.Future;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,9 +24,10 @@ import java.util.Optional;
 public class ItemService {
     private final ModelMapper mapper;
     private final ItemRepository itemRepository;
-    private final OrderRepository orderRepository;
     private final CategoryRepository categoryRepository;
     private final WarehouseRepository warehouseRepository;
+    private final OrderRepository orderRepository;
+    private final OrderLineRepository orderLineRepository;
 
 
     public Long createItem(ItemCreateDTO itemCreateDTO) {
@@ -107,5 +109,36 @@ public class ItemService {
     public List<ItemDTO> search() {
         List<ItemEntity> items = itemRepository.findAll();
         return items.stream().map(item -> mapper.map(item, ItemDTO.class)).toList();
+    }
+
+    public int checkAvailabilityAtDateRange(Long itemId, @Future LocalDate devileryDate, @Future LocalDate returnDate) {
+        ItemEntity item = itemRepository.findById(itemId).orElseThrow();
+        int quantity = getQuantityAtDate(item, devileryDate);
+        item.setCurrentQuantity(quantity);
+        //check the quantity from the delivery date to the return date
+        for(devileryDate = devileryDate.plusDays(1); devileryDate.isBefore(returnDate) || devileryDate.isEqual(returnDate); devileryDate = devileryDate.plusDays(1)) {
+            int quantityAtDate = getQuantityAtDate(item, devileryDate);
+            quantity = Math.min(quantity, quantityAtDate);
+        }
+
+        return quantity;
+    }
+
+    private int getQuantityAtDate(ItemEntity item, LocalDate devileryDate) {
+        List<OrderEntity> deliveries = orderRepository.findAllDeliveriesBetweenDates(LocalDate.now(), devileryDate);
+        List<OrderEntity> pickups = orderRepository.findAllPickupsBetweenDates(LocalDate.now(), devileryDate);
+        int deliveryQuantity = deliveries.stream()
+                .mapToInt(order ->
+                        order.getLines().stream()
+                                .filter(line -> line.getItem().getId().equals(item.getId()))
+                                .mapToInt(OrderLineEntity::getQuantity).sum())
+                .sum();
+        int pickupQuantity = deliveries.stream()
+                .mapToInt(order ->
+                        order.getLines().stream()
+                                .filter(line -> line.getItem().getId().equals(item.getId()))
+                                .mapToInt(OrderLineEntity::getQuantity).sum())
+                .sum();
+        return item.getCurrentQuantity() - deliveryQuantity + pickupQuantity;
     }
 }

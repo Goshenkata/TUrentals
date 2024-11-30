@@ -20,7 +20,7 @@ public class OrderEntity {
     @Column(nullable = false)
     BigDecimal totalPrice;
     @Column(nullable = false)
-     LocalDate deliveryData;
+     LocalDate deliveryDate;
     @Column(nullable = false)
     LocalDate returnDate;
     @OneToOne
@@ -28,6 +28,9 @@ public class OrderEntity {
     @Enumerated
     OrderStatus status;
 
+    @ManyToOne
+    UserEntity customer;
+
     @OneToMany()
-    private List<OrderLineEntity> items;
+    List<OrderLineEntity> lines;
 }
