@@ -3,7 +3,10 @@ package com.example.demo.init;
 import com.example.demo.dto.enums.RoleEnum;
 import com.example.demo.model.UserEntity;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.service.CategoryService;
+import com.example.demo.service.CurrentAvailabilityService;
 import com.example.demo.service.ItemService;
+import com.example.demo.service.WarehouseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +23,9 @@ public class DBInit implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ItemService itemService;
+    private final CategoryService categoryService;
+    private final WarehouseService warehouseService;
+    private final CurrentAvailabilityService currentAvailabilityService;
 
     @Value("${admin.email}")
     private String adminEmail;
@@ -27,7 +33,7 @@ public class DBInit implements CommandLineRunner {
     private String adminPassword;
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         initUsers();
     }
 
@@ -42,6 +48,9 @@ public class DBInit implements CommandLineRunner {
             userRepository.saveAll(users);
             log.info("Users initialized in the database");
         }
+        warehouseService.seedWarehouse();
+        currentAvailabilityService.seedCurrentAvailability();
+        categoryService.seedCategories();
         itemService.seedItems();
     }
 }

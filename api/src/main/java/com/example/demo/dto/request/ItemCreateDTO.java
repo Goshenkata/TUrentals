@@ -1,16 +1,13 @@
 package com.example.demo.dto.request;
 
-import com.example.demo.dto.enums.CategoryEnum;
-import com.example.demo.validation.ValidEnum;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.URL;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -23,12 +20,11 @@ public class ItemCreateDTO {
     private String description;
     @NotNull
     private BigDecimal pricePerDay;
-    //todo. cloud file upload?
+    @URL
     private String imageUrl;
     @NotNull
     @Min(0)
     private Integer initialQuantity;
     @NotNull
-    @ValidEnum(enumClass = CategoryEnum.class)
-    private String categories;
+    private Long categoryId;
 }

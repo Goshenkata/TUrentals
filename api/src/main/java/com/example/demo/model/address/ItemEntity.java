@@ -1,6 +1,6 @@
-package com.example.demo.model;
+package com.example.demo.model.address;
 
-import com.example.demo.dto.enums.CategoryEnum;
+import com.example.demo.model.CategoryEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,10 +24,9 @@ public class ItemEntity {
     private BigDecimal pricePerDay;
     @Column
     private String imageUrl;
-    @Column(nullable = false, columnDefinition = "integer default 0")
-    private Integer quantity;
-    @Enumerated
-    private CategoryEnum categories;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    private CategoryEntity category;
 
     @Override
     public boolean equals(Object o) {

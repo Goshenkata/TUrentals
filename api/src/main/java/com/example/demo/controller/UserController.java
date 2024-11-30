@@ -2,7 +2,9 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.common.MessageResponseDTO;
 import com.example.demo.dto.enums.RoleEnum;
+import com.example.demo.dto.request.AdminCreateUserDTO;
 import com.example.demo.dto.request.RegistrationDTO;
+import com.example.demo.dto.response.UserDto;
 import com.example.demo.dto.response.JWTDTO;
 import com.example.demo.dto.request.LoginDTO;
 import com.example.demo.service.UserService;
@@ -10,13 +12,17 @@ import com.example.demo.utils.JWTUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequestMapping("/user/")
 @RestController
@@ -25,6 +31,7 @@ public class UserController {
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final JWTUtils jwtUtils;
+    private final ModelMapper modelMapper;
 
     @PostMapping("register")
     @Operation(summary = "Register a new user")
@@ -54,14 +61,43 @@ public class UserController {
     }
 
     @PostMapping("isValid")
-    ResponseEntity<?> isValid(@RequestHeader("Authorization") String token) {
-        token = token.substring(7);
-        boolean result = jwtUtils.validateToken(token);
-        if (result) {
-            return ResponseEntity.ok().build();
-        } else {
+    //since we have .anyRequest().authenticated() in SecurityConfiguration, this endpoint will only be accessible to authenticated users
+    ResponseEntity<?> isValid() {
+        return ResponseEntity.ok().build();
+    }
+
+
+    @PostMapping("createUser")
+    @Operation(summary = "Admin creation of a new user with role")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<MessageResponseDTO> adminCreateUser(@Valid @RequestBody AdminCreateUserDTO dto,
+                                                              BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(
+                    new MessageResponseDTO(400, bindingResult.getAllErrors().get(0).getDefaultMessage()));
+        }
+        MessageResponseDTO result = userService.registerUser(modelMapper.map(dto, RegistrationDTO.class), RoleEnum.valueOf(dto.getRole()));
+        return ResponseEntity.status(result.status()).body(result);
+    }
+
+    @GetMapping("getUsers")
+    @Operation(summary = "Gets users, can be sorted by role or email")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<List<UserDto>>  getUsers(@RequestParam(required = false) String role,
+                                                   @RequestParam(required = false) String email) {
+        if (role != null && RoleEnum.getRole(role).isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
+        return ResponseEntity.ok(userService.getUsers(role, email));
+    }
+
+    //todo change to id
+    @DeleteMapping("deleteUser/{email}")
+    @Operation(summary = "Delete a user by email")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<MessageResponseDTO> deleteUser(@PathVariable String email) {
+        MessageResponseDTO result = userService.deleteUser(email);
+        return ResponseEntity.status(result.status()).body(result);
     }
 
 }

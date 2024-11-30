@@ -1,6 +1,5 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.enums.RoleEnum;
 import com.example.demo.model.UserEntity;
 import com.example.demo.repository.UserRepository;
 import lombok.AllArgsConstructor;

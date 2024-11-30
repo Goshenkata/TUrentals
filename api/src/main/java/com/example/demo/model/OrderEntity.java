@@ -1,13 +1,14 @@
 package com.example.demo.model;
 
+import com.example.demo.model.address.AddressEntity;
+import com.example.demo.model.availability.ItemNumberPairEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.List;
 
 @Entity
 @Data
@@ -23,10 +24,11 @@ public class OrderEntity {
     @Column(nullable = false)
     LocalDate returnDate;
     @OneToOne
-    AdressEntity deliveryAddress;
+    AddressEntity deliveryAddress;
+    @Enumerated
+    OrderStatus status;
 
-    @ElementCollection
-    @MapKeyJoinColumn(name = "item_entity_id")
-    @Column(name = "value")
-    Map<ItemEntity, Integer> orderedItems;
+    @OneToMany()
+    private List<ItemNumberPairEntity> items;
+
 }

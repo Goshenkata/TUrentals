@@ -1,9 +1,9 @@
 package com.example.demo.repository;
 
-import com.example.demo.model.address.ItemEntity;
+import com.example.demo.model.availability.ItemNumberPairEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ItemRepository extends JpaRepository<ItemEntity, Long> {
+public interface ItemNumberPairRepository extends JpaRepository<ItemNumberPairEntity, Long> {
 }
