@@ -1,17 +1,18 @@
 package com.example.demo.model.availability;
 
+import com.example.demo.model.ItemEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.List;
 
 @Entity
 @Data
-public class WarehouseAvailabilityEnitity {
+public class WarehouseLineEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(fetch = FetchType.EAGER)
-    private List<ItemNumberPairEntity> lines;
+    @OneToOne
+    private ItemEntity item;
+    private int quantity;
 }

@@ -4,11 +4,12 @@ import com.example.demo.dto.enums.CategoryEnum;
 import com.example.demo.dto.request.ItemCreateDTO;
 import com.example.demo.dto.response.ItemDTO;
 import com.example.demo.model.CategoryEntity;
-import com.example.demo.model.address.ItemEntity;
+import com.example.demo.model.ItemEntity;
+import com.example.demo.model.availability.WarehouseLineEntity;
 import com.example.demo.repository.CategoryRepository;
 import com.example.demo.repository.ItemRepository;
 import com.example.demo.repository.OrderRepository;
-import jakarta.transaction.Transactional;
+import com.example.demo.repository.WarehouseRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final OrderRepository orderRepository;
     private final CategoryRepository categoryRepository;
-    private final WarehouseService warehouseService;
+    private final WarehouseRepository warehouseRepository;
 
 
     public Long createItem(ItemCreateDTO itemCreateDTO) {
@@ -92,9 +93,14 @@ public class ItemService {
         item.setPricePerDay(pricePerDay);
         item.setImageUrl(imageUrl);
         item.setCategory(categoryEntity.get());
+        item.setCurrentQuantity(initialQuantity);
 
         itemRepository.save(item);
-        warehouseService.setLine(item.getId(), initialQuantity);
+        //save the line to the warehouse
+        WarehouseLineEntity line = new WarehouseLineEntity();
+        line.setItem(item);
+        line.setQuantity(initialQuantity);
+        warehouseRepository.save(line);
     }
 
 

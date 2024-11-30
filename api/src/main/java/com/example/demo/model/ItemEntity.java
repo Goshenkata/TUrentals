@@ -1,6 +1,5 @@
-package com.example.demo.model.address;
+package com.example.demo.model;
 
-import com.example.demo.model.CategoryEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,6 +26,9 @@ public class ItemEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     private CategoryEntity category;
+
+    @Column(nullable = false)
+    private int currentQuantity;
 
     @Override
     public boolean equals(Object o) {

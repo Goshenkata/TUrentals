@@ -1,7 +1,7 @@
 package com.example.demo.model;
 
 import com.example.demo.model.address.AddressEntity;
-import com.example.demo.model.availability.ItemNumberPairEntity;
+import com.example.demo.model.availability.OrderLineEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,6 +29,5 @@ public class OrderEntity {
     OrderStatus status;
 
     @OneToMany()
-    private List<ItemNumberPairEntity> items;
-
+    private List<OrderLineEntity> items;
 }
