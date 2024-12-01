@@ -113,32 +113,38 @@ public class ItemService {
 
     public int checkAvailabilityAtDateRange(Long itemId, @Future LocalDate devileryDate, @Future LocalDate returnDate) {
         ItemEntity item = itemRepository.findById(itemId).orElseThrow();
-        int quantity = getQuantityAtDate(item, devileryDate);
-        item.setCurrentQuantity(quantity);
-        //check the quantity from the delivery date to the return date
-        for(devileryDate = devileryDate.plusDays(1); devileryDate.isBefore(returnDate) || devileryDate.isEqual(returnDate); devileryDate = devileryDate.plusDays(1)) {
-            int quantityAtDate = getQuantityAtDate(item, devileryDate);
-            quantity = Math.min(quantity, quantityAtDate);
+        int currentQuantity = getQuantityAtDeliveryDate(item, devileryDate);
+        int minQuantity = currentQuantity;
+        //check the quantity every day from the delivery date to the return date
+        for (devileryDate = devileryDate.plusDays(1); devileryDate.isBefore(returnDate) || devileryDate.isEqual(returnDate); devileryDate = devileryDate.plusDays(1)) {
+            List<OrderEntity> deliveries = orderRepository.findAllDelieriesOnDate(devileryDate);
+            List<OrderEntity> pickups = orderRepository.findAllPickupsOnDate(devileryDate);
+            int deliveryQuantity = getSumQuantity(deliveries, item);
+            int pickupQuantity = getSumQuantity(pickups, item);
+            currentQuantity = currentQuantity - deliveryQuantity + pickupQuantity;
+            if (currentQuantity < minQuantity) {
+                minQuantity = currentQuantity;
+            }
         }
 
-        return quantity;
+        return minQuantity;
     }
 
-    private int getQuantityAtDate(ItemEntity item, LocalDate devileryDate) {
+    //get every delivery and pickup between the current and return date and calculates the quntity at the time of the delivery date
+    private int getQuantityAtDeliveryDate(ItemEntity item, LocalDate devileryDate) {
         List<OrderEntity> deliveries = orderRepository.findAllDeliveriesBetweenDates(LocalDate.now(), devileryDate);
         List<OrderEntity> pickups = orderRepository.findAllPickupsBetweenDates(LocalDate.now(), devileryDate);
-        int deliveryQuantity = deliveries.stream()
-                .mapToInt(order ->
-                        order.getLines().stream()
-                                .filter(line -> line.getItem().getId().equals(item.getId()))
-                                .mapToInt(OrderLineEntity::getQuantity).sum())
-                .sum();
-        int pickupQuantity = deliveries.stream()
-                .mapToInt(order ->
-                        order.getLines().stream()
-                                .filter(line -> line.getItem().getId().equals(item.getId()))
-                                .mapToInt(OrderLineEntity::getQuantity).sum())
-                .sum();
+        int deliveryQuantity = getSumQuantity(deliveries, item);
+        int pickupQuantity = getSumQuantity(pickups, item);
         return item.getCurrentQuantity() - deliveryQuantity + pickupQuantity;
+    }
+
+    int getSumQuantity(List<OrderEntity> orders, ItemEntity item) {
+        return orders.stream()
+                .mapToInt(order ->
+                        order.getLines().stream()
+                                .filter(line -> line.getItem().getId().equals(item.getId()))
+                                .mapToInt(OrderLineEntity::getQuantity).sum())
+                .sum();
     }
 }

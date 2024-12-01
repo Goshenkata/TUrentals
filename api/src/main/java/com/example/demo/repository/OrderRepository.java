@@ -17,4 +17,12 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     @Query("SELECT o FROM OrderEntity o WHERE o.returnDate >= :startDate AND o.returnDate <= :endDate")
     List<OrderEntity> findAllPickupsBetweenDates(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+
+    @Query("SELECT o FROM OrderEntity o WHERE o.deliveryDate = :date")
+    List<OrderEntity> findAllDelieriesOnDate(@Param("date") LocalDate date);
+
+    @Query("SELECT o FROM OrderEntity o WHERE o.returnDate = :date")
+    List<OrderEntity> findAllPickupsOnDate(@Param("date") LocalDate date);
+
 }
