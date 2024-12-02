@@ -87,6 +87,134 @@ public class OrderService {
                             List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
                     , email
             );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(3),
+                            new AddressDTO("Bulgaria", "Sofia", "Sofia", "ul. Georgi Raychev 15", "1000", "Leave items at the driveway"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(2),
+                            new AddressDTO("Bulgaria", "Pleven", "Pleven", "ul. Ivan Kirkov 17", "5800", "Leave items at the driveway"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(5),
+                            new AddressDTO("Bulgaria", "Varna", "Varna", "boul. Mariya Louiza 1", "9000", "Leave items at the driveway"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(5),
+                            new AddressDTO("Bulgaria", "Varna", "Varna", "boul. Primorski 3", "9000", "Leave items at the driveway"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(5),
+                            new AddressDTO("Bulgaria", "Kyustendil", "Dupnitsa", "ul. Ivan Stranski 15", "2600", "Leave items at the driveway"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(5),
+                            new AddressDTO("Bulgaria", "Kyustendil", "Kyustendil", "ul. Roden krai 10", "2500", "Leave items at the driveway"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(5),
+                            new AddressDTO("Bulgaria", "Sofia", "Sofia", "boul. St.Klimet Ohridski 16", "1000", "Leave items at the driveway"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(5),
+                            new AddressDTO("Bulgaria", "Sofia", "Sofia", "ul. Vitosha 15", "1000", "Leave at the main entrance"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(5),
+                            new AddressDTO("Bulgaria", "Plovdiv", "Plovdiv City", "ul. Kapitan Raycho 10", "4000", "Leave at the back door"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(5),
+                            new AddressDTO("Bulgaria", "Varna", "Varna City", "ul. Kniaz Boris 20", "9000", "Deliver to reception"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(5),
+                            new AddressDTO("Bulgaria", "Ruse", "Ruse City", "ul. Petko Slaveykov 5", "7000", "Leave at the parking lot"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(5),
+                            new AddressDTO("Bulgaria", "Stara Zagora", "Stara Zagora City", "ul. Todor Kableshkov 12", "6000", "Drop off at the side gate"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(5),
+                            new AddressDTO("Bulgaria", "Veliko Tarnovo", "Veliko Tarnovo City", "ul. Ivaylo 30", "5000", "Deliver to the front porch"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(5),
+                            new AddressDTO("Bulgaria", "Blagoevgrad", "Blagoevgrad City", "ul. Georgi Izmirliev 22", "2700", "Hand over at the security desk"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(5),
+                            new AddressDTO("Bulgaria", "Shumen", "Shumen City", "ul. Dobri Voynikov 35", "9700", "Drop off near the stairs"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(5),
+                            new AddressDTO("Bulgaria", "Burgas", "Burgas City", "ul. Alexander Battenberg 25", "8000", "Hand over to the concierge"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
         }
     }
 }
