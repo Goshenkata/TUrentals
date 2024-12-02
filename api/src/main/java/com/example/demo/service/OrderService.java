@@ -79,14 +79,14 @@ public class OrderService {
         String email = "user@gmail.com";
         ItemEntity itemEntity = itemRepository.findAll().getFirst();
         if (orderRepository.count() == 0) {
-            createOrder(
-                    new OrderCreateDTO(
-                            LocalDate.now(),
-                            LocalDate.now().plusDays(5),
-                            new AddressDTO("Bulgaria", "Sofia", "Sofia", "ul. Tintyava 15", "1000", "Leave items at the driveway"),
-                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
-                    , email
-            );
+//            createOrder(
+//                    new OrderCreateDTO(
+//                            LocalDate.now(),
+//                            LocalDate.now().plusDays(5),
+//                            new AddressDTO("Bulgaria", "Sofia", "Sofia", "ul. Tintyava 15", "1000", "Leave items at the driveway"),
+//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+//                    , email
+//            );
 //            createOrder(
 //                    new OrderCreateDTO(
 //                            LocalDate.now(),
