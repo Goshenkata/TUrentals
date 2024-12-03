@@ -2,7 +2,6 @@ package com.example.demo.model;
 
 
 import com.example.demo.dto.enums.RoleEnum;
-import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,23 +20,23 @@ public class UserEntity {
     Long id;
 
     @Column(nullable = false)
-    @Nonnull
+    @NonNull
     private String firstName;
 
     @Column(nullable = false)
-    @Nonnull
+    @NonNull
     private String lastName;
 
     @Column(nullable = false, unique = true)
-    @Nonnull
+    @NonNull
     private String email;
 
     @Column(nullable = false)
-    @Nonnull
+    @NonNull
     private String password;
 
     @Column(nullable = false, unique = true)
-    @Nonnull
+    @NonNull
     private String phoneNumber;
 
     @Enumerated(EnumType.STRING)
