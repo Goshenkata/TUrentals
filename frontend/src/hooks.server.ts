@@ -21,7 +21,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 			method: 'GET'
 		});
 
-		console.log(res);
+		// console.log(res);
 
 		if (!res.ok) {
 			event.locals.user = null;
@@ -34,7 +34,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		event.locals.user = null;
 	}
 
-	console.log(event.locals.user);
+	// console.log(event.locals.user);
 
 	return resolve(event);
 };

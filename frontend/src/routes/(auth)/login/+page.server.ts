@@ -15,7 +15,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	login: async ({ cookies, locals, request, fetch }) => {
+	login: async ({ cookies, request, fetch }) => {
 		const form = await superValidate(request, zod(loginSchema));
 
 		if (!form.valid) {
@@ -46,7 +46,6 @@ export const actions: Actions = {
 			user = await res.json();
 		} catch (err) {
 			console.log(err);
-
 			return { form, errorLogin: true };
 		}
 

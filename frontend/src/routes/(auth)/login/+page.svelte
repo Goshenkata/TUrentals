@@ -1,17 +1,12 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { Label } from '$lib/components/ui/label/index.js';
 	import * as Form from '$lib/components/ui/form';
 	import { superForm } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import TogglePassword from '$lib/components/TogglePassword.svelte';
 	import type { ActionData, PageData } from './$types';
 	import { toast } from 'svelte-sonner';
-	import * as Alert from '$lib/components/ui/alert/index.js';
-	import { enhance } from '$app/forms';
-	import { CheckCircle, TriangleAlert } from 'lucide-svelte';
 	import { loginSchema } from './schema';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
@@ -25,9 +20,13 @@
 
 	let toggled: boolean = $state(false);
 
-	// $effect(() => {
-	// 	if (form?.wrongCreds) toast.error('Грешен имейл или парола.');
-	// });
+	$effect(() => {
+		if (form?.wrongCreds) toast.error('Грешен имейл или парола.');
+	});
+
+	$effect(() => {
+		if (form?.errorLogin) toast.error('Възникна грешка.');
+	});
 </script>
 
 <div class="flex h-screen w-full items-center justify-center px-4">
