@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.service.StripeService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,27 +16,29 @@ public class StripeController {
 
     private final StripeService stripeService;
 
-    public StripeController() {
-        // Initialize with your Stripe secret key
-        // todo check my stripe secret key
-        this.stripeService = new StripeService("sk_test_z6Wgj3W5n3eYSLEKPRJ4OrE900vpjOnFhP");
+    @Value("${stripe.domain}")
+    private String yourDomain;
+
+    public StripeController(StripeService stripeService) {
+        this.stripeService = stripeService;
     }
 
     @GetMapping("/create-checkout-session")
-    public ResponseEntity<Void> createCheckoutSession(
-            @RequestParam String priceId) {
+    public ResponseEntity<String> createCheckoutSession(
+            ) {
+            //@RequestParam String successUrl{
+        System.out.println("test 1");
+
         try {
-            String YOUR_DOMAIN = "http://localhost:4242";
-            String successUrl = YOUR_DOMAIN + "/success.html";
-            String cancelUrl = YOUR_DOMAIN + "/cancel.html";
+            String successUrl = yourDomain + "/success.html";
+            String cancelUrl = yourDomain + "/cancel.html";
 
             // Get the checkout session URL from the StripeService
-            String sessionUrl = stripeService.createCheckoutSession(successUrl, cancelUrl, priceId);
+            String sessionUrl = stripeService.createCheckoutSession(successUrl, cancelUrl);
 
             // Set up the redirect in the response headers
-            HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(URI.create(sessionUrl));
-            return new ResponseEntity<>(headers, HttpStatus.SEE_OTHER); // 303 redirect
+            System.out.println("test 2");
+            return ResponseEntity.ok(sessionUrl);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
