@@ -7,6 +7,7 @@ import com.example.demo.dto.request.RegistrationDTO;
 import com.example.demo.dto.response.UserDto;
 import com.example.demo.dto.response.JWTDTO;
 import com.example.demo.dto.request.LoginDTO;
+import com.example.demo.service.UserDetailsServiceImpl;
 import com.example.demo.service.UserService;
 import com.example.demo.utils.JWTUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RequestMapping("/user/")
@@ -32,6 +34,7 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final JWTUtils jwtUtils;
     private final ModelMapper modelMapper;
+    private final UserDetailsServiceImpl userDetailsService;
 
     @PostMapping("register")
     @Operation(summary = "Register a new user")
@@ -54,16 +57,21 @@ public class UserController {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword())
         );
-        UserDetails userDetails =(UserDetails) authentication.getPrincipal();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         RoleEnum roleEnum = RoleEnum.valueOf(userDetails.getAuthorities().toArray()[0].toString());
         String jwt = jwtUtils.generateToken(userDetails.getUsername(), roleEnum);
         return ResponseEntity.ok(new JWTDTO(userDetails.getUsername(), jwt, roleEnum.toString()));
     }
 
     @GetMapping("isValid")
-    //since we have .anyRequest().authenticated() in SecurityConfiguration, this endpoint will only be accessible to authenticated users
-    ResponseEntity<?> isValid() {
-        return ResponseEntity.ok().build();
+        //gets the user from the token and checks if the user is valid
+    ResponseEntity<?> isValid(Principal principal, @RequestHeader("Authorization") String token) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(principal.getName());
+        token = token.substring(7);
+        if (userDetails != null) {
+            return ResponseEntity.ok(new JWTDTO(userDetails.getUsername(), token, userDetails.getAuthorities().toArray()[0].toString()));
+        }
+        return ResponseEntity.badRequest().build();
     }
 
 
@@ -83,8 +91,8 @@ public class UserController {
     @GetMapping("getUsers")
     @Operation(summary = "Gets users, can be sorted by role or email")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<List<UserDto>>  getUsers(@RequestParam(required = false) String role,
-                                                   @RequestParam(required = false) String email) {
+    public ResponseEntity<List<UserDto>> getUsers(@RequestParam(required = false) String role,
+                                                  @RequestParam(required = false) String email) {
         if (role != null && RoleEnum.getRole(role).isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
