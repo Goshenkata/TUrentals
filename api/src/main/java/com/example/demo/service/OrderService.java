@@ -15,6 +15,7 @@ import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
@@ -58,6 +60,7 @@ public class OrderService {
             }
             int availability = itemService.checkAvailabilityAtDateRange(itemDTO.getItemId(), orderCreateDTO.getDeliveryDate(), orderCreateDTO.getReturnDate());
             if (availability < itemDTO.getQuantity()) {
+                log.warn("Not enough items available");
                 return new MessageResponseDTO(501, "Not enough items available");
             }
             OrderLineEntity line = new OrderLineEntity();
@@ -79,54 +82,59 @@ public class OrderService {
         String email = "user@gmail.com";
         ItemEntity itemEntity = itemRepository.findAll().getFirst();
         if (orderRepository.count() == 0) {
-//            createOrder(
-//                    new OrderCreateDTO(
-//                            LocalDate.now(),
-//                            LocalDate.now().plusDays(5),
-//                            new AddressDTO("Bulgaria", "Sofia", "Sofia", "ul. Tintyava 15", "1000", "Leave items at the driveway"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
-//                    , email
-//            );
-//            createOrder(
-//                    new OrderCreateDTO(
-//                            LocalDate.now(),
-//                            LocalDate.now().plusDays(3),
-//                            new AddressDTO("Bulgaria", "Sofia", "Sofia", "ul. Georgi Raychev 15", "1000", "Leave items at the driveway"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
-//                    , email
-//            );
-//            createOrder(
-//                    new OrderCreateDTO(
-//                            LocalDate.now(),
-//                            LocalDate.now().plusDays(2),
-//                            new AddressDTO("Bulgaria", "Pleven", "Pleven", "ul. Ivan Kirkov 17", "5800", "Leave items at the driveway"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
-//                    , email
-//            );
-//            createOrder(
-//                    new OrderCreateDTO(
-//                            LocalDate.now(),
-//                            LocalDate.now().plusDays(5),
-//                            new AddressDTO("Bulgaria", "Varna", "Varna", "boul. Mariya Louiza 1", "9000", "Leave items at the driveway"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
-//                    , email
-//            );
-//            createOrder(
-//                    new OrderCreateDTO(
-//                            LocalDate.now(),
-//                            LocalDate.now().plusDays(5),
-//                            new AddressDTO("Bulgaria", "Varna", "Varna", "boul. Primorski 3", "9000", "Leave items at the driveway"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
-//                    , email
-//            );
-//            createOrder(
-//                    new OrderCreateDTO(
-//                            LocalDate.now(),
-//                            LocalDate.now().plusDays(5),
-//                            new AddressDTO("Bulgaria", "Kyustendil", "Dupnitsa", "ul. Ivan Stranski 15", "2600", "Leave items at the driveway"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
-//                    , email
-//            );
+            //should be available
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(1),
+                            new AddressDTO("Bulgaria", "Sofia", "Sofia", "ul. Tintyava 15", "1000", "Leave items at the driveway"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 50)))
+                    , email
+            );
+            //should be available
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now().plusDays(1),
+                            LocalDate.now().plusDays(3),
+                            new AddressDTO("Bulgaria", "Sofia", "Sofia", "ul. Georgi Raychev 15", "1000", "Leave items at the driveway"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
+            //should fail
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now(),
+                            LocalDate.now().plusDays(2),
+                            new AddressDTO("Bulgaria", "Pleven", "Pleven", "ul. Ivan Kirkov 17", "5800", "Leave items at the driveway"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 50)))
+                    , email
+            );
+            //should work
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now().plusDays(1),
+                            LocalDate.now().plusDays(4),
+                            new AddressDTO("Bulgaria", "Varna", "Varna", "boul. Mariya Louiza 1", "9000", "Leave items at the driveway"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 40)))
+                    , email
+            );
+            //should fail
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now().plusDays(3),
+                            LocalDate.now().plusDays(5),
+                            new AddressDTO("Bulgaria", "Varna", "Varna", "boul. Primorski 3", "9000", "Leave items at the driveway"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 40)))
+                    , email
+            );
+            createOrder(
+                    new OrderCreateDTO(
+                            LocalDate.now().plusDays(3),
+                            LocalDate.now().plusDays(5),
+                            new AddressDTO("Bulgaria", "Kyustendil", "Dupnitsa", "ul. Ivan Stranski 15", "2600", "Leave items at the driveway"),
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                    , email
+            );
 //            createOrder(
 //                    new OrderCreateDTO(
 //                            LocalDate.now(),

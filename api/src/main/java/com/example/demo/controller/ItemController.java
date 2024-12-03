@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,9 +19,9 @@ import java.util.List;
 @RequestMapping("item/")
 @RequiredArgsConstructor
 public class ItemController {
-    ItemService itemService;
+    private final ItemService itemService;
 
-    @PostMapping("/create")
+    @PostMapping("create")
     @Operation(summary = "Create a new item")
     public ResponseEntity<Long> createItem(@Valid ItemCreateDTO itemCreateDTO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -30,7 +31,7 @@ public class ItemController {
         return id != -1 ? ResponseEntity.ok(id) : ResponseEntity.badRequest().build();
     }
     //todo add pagination and search
-    @PostMapping("/search")
+    @GetMapping("search")
     public ResponseEntity<List<ItemDTO>> searchItems() {
         List<ItemDTO> items = itemService.search();
         return ResponseEntity.ok(items);

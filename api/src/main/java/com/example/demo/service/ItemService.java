@@ -4,6 +4,7 @@ import com.example.demo.dto.enums.CategoryEnum;
 import com.example.demo.dto.request.ItemCreateDTO;
 import com.example.demo.dto.response.ItemDTO;
 import com.example.demo.model.CategoryEntity;
+import com.example.demo.model.ImageEntity;
 import com.example.demo.model.ItemEntity;
 import com.example.demo.model.OrderEntity;
 import com.example.demo.model.availability.OrderLineEntity;
@@ -11,6 +12,7 @@ import com.example.demo.model.availability.WarehouseLineEntity;
 import com.example.demo.repository.*;
 import jakarta.validation.constraints.Future;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -21,17 +23,24 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ItemService {
     private final ModelMapper mapper;
     private final ItemRepository itemRepository;
     private final CategoryRepository categoryRepository;
     private final WarehouseRepository warehouseRepository;
     private final OrderRepository orderRepository;
-    private final OrderLineRepository orderLineRepository;
+    private final ImageRepository imageRepository;
 
 
     public Long createItem(ItemCreateDTO itemCreateDTO) {
+
+        ImageEntity image = imageRepository.findByUrl(itemCreateDTO.getImageUrl())
+                .orElse(imageRepository.findByUrl("https://t4.ftcdn.net/jpg/04/73/25/49/360_F_473254957_bxG9yf4ly7OBO5I0O5KABlN930GwaMQz.jpg")
+                        .orElseThrow(() -> new RuntimeException("Default image not found")));
+
         ItemEntity entity = mapper.map(itemCreateDTO, ItemEntity.class);
+        entity.setImage(image);
         try {
             itemRepository.save(entity);
         } catch (Exception e) {
@@ -45,7 +54,7 @@ public class ItemService {
             return; // Skip initialization if data already exists
         }
         createItem("Wooden Chair", "Elegant wooden chair for events.", BigDecimal.valueOf(10), "https://img.freepik.com/free-vector/vintage-armchair-vector-illustration-remixed-from-artwork-by-donald-harding_53876-115493.jpg?t=st=1732544311~exp=1732547911~hmac=0d80802e8aadd15bb53b6bbc3bc7e50bda56402ccf178cd7e2ffd959c4d8e679&w=740", 50, CategoryEnum.FURNITURE);
-        createItem("Round Table", "Sturdy round table.", BigDecimal.valueOf(25), "https://img.freepik.com/free-vector/vintage-armchair-vector-illustration-remixed-from-artwork-by-donald-harding_53876-115493.jpg?t=st=1732544311~exp=1732547911~hmac=0d80802e8aadd15bb53b6bbc3bc7e50bda56402ccf178cd7e2ffd959c4d8e679&w=740", 20, CategoryEnum.FURNITURE);
+        createItem("Round Table", "Sturdy round table.", BigDecimal.valueOf(25), "https://saltwoods.com/wp-content/uploads/2024/07/littlesur-copy.jpg", 20, CategoryEnum.FURNITURE);
         createItem("Leather Sofa", "Comfortable leather sofa.", BigDecimal.valueOf(50), "https://5.imimg.com/data5/SELLER/Default/2021/12/AR/OK/DV/14537345/5-seater-leather-sofa-set-500x500.jpg", 5, CategoryEnum.FURNITURE);
 
         // DECOR
@@ -84,16 +93,19 @@ public class ItemService {
         createItem("DJ Mixer", "DJ mixer for events.", BigDecimal.valueOf(60), "https://images-cdn.ubuy.co.in/65e118514cfdfe6e4c7d59bb-numark-mixtrack-pro-dj-controller-with.jpg", 3, CategoryEnum.AUDIO);
     }
 
-    public void createItem(String name, String description, BigDecimal pricePerDay, String imageUrl, int initialQuantity, CategoryEnum category) {
+    private void createItem(String name, String description, BigDecimal pricePerDay, String imageUrl, int initialQuantity, CategoryEnum category) {
         Optional<CategoryEntity> categoryEntity = categoryRepository.findByName(category.toString());
         if (categoryEntity.isEmpty()) {
             categoryRepository.save(new CategoryEntity(category.toString()));
         }
+        ImageEntity image = imageRepository.findByUrl(imageUrl)
+                .orElseGet(() -> imageRepository.save(new ImageEntity(imageUrl)));
+
         ItemEntity item = new ItemEntity();
         item.setName(name);
         item.setDescription(description);
         item.setPricePerDay(pricePerDay);
-        item.setImageUrl(imageUrl);
+        item.setImage(image);
         item.setCategory(categoryEntity.get());
         item.setCurrentQuantity(initialQuantity);
 
@@ -114,6 +126,7 @@ public class ItemService {
     public int checkAvailabilityAtDateRange(Long itemId, @Future LocalDate devileryDate, @Future LocalDate returnDate) {
         ItemEntity item = itemRepository.findById(itemId).orElseThrow();
         int currentQuantity = getQuantityAtDeliveryDate(item, devileryDate);
+        log.debug("Current quantity at delivery date: {}", currentQuantity);
         int minQuantity = currentQuantity;
         //check the quantity every day from the delivery date to the return date
         for (devileryDate = devileryDate.plusDays(1); devileryDate.isBefore(returnDate) || devileryDate.isEqual(returnDate); devileryDate = devileryDate.plusDays(1)) {
@@ -126,7 +139,7 @@ public class ItemService {
                 minQuantity = currentQuantity;
             }
         }
-
+        log.debug("Available quantity between delivery and return date: {}", minQuantity);
         return minQuantity;
     }
 

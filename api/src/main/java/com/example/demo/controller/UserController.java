@@ -60,7 +60,7 @@ public class UserController {
         return ResponseEntity.ok(new JWTDTO(userDetails.getUsername(), jwt, roleEnum.toString()));
     }
 
-    @PostMapping("isValid")
+    @GetMapping("isValid")
     //since we have .anyRequest().authenticated() in SecurityConfiguration, this endpoint will only be accessible to authenticated users
     ResponseEntity<?> isValid() {
         return ResponseEntity.ok().build();

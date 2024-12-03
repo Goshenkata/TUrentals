@@ -21,8 +21,9 @@ public class ItemEntity {
     private String description;
     @Column(nullable = false)
     private BigDecimal pricePerDay;
-    @Column
-    private String imageUrl;
+
+    @OneToOne
+    private ImageEntity image;
 
     @ManyToOne(fetch = FetchType.EAGER)
     private CategoryEntity category;
