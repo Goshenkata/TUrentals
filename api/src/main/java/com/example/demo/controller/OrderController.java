@@ -2,18 +2,19 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.common.MessageResponseDTO;
 import com.example.demo.dto.request.OrderCreateDTO;
+import com.example.demo.dto.response.OrderDTO;
 import com.example.demo.service.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,7 +27,16 @@ public class OrderController {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().build();
         }
-        MessageResponseDTO response =  orderService.createOrder(orderCreateDTO, principal.getName());
+        MessageResponseDTO response = orderService.createOrder(orderCreateDTO, principal.getName());
         return ResponseEntity.status(response.status()).body(response);
     }
+
+    @GetMapping("getPending")
+    @PreAuthorize("hasAuthority('MANAGER')")
+    @Operation(summary = "For managers, get the pending orders")
+    public ResponseEntity<List<OrderDTO>> getPendingOrders() {
+        List<OrderDTO> orders = orderService.getPendingOrders();
+        return ResponseEntity.ok(orders);
+    }
+
 }

@@ -1,12 +1,14 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.common.MessageResponseDTO;
+import com.example.demo.dto.enums.OrderStatus;
+import com.example.demo.dto.enums.OrderType;
 import com.example.demo.dto.request.AddressDTO;
 import com.example.demo.dto.request.ItemNumberPairDTO;
 import com.example.demo.dto.request.OrderCreateDTO;
+import com.example.demo.dto.response.OrderDTO;
 import com.example.demo.model.ItemEntity;
 import com.example.demo.model.OrderEntity;
-import com.example.demo.model.OrderStatus;
 import com.example.demo.model.UserEntity;
 import com.example.demo.model.availability.OrderLineEntity;
 import com.example.demo.repository.ItemRepository;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -224,5 +227,38 @@ public class OrderService {
 //                    , email
 //            );
         }
+    }
+
+    public List<OrderDTO> getPendingOrders() {
+        List<OrderEntity> pendingOrdersAfterToday = orderRepository.findAllByDeliveryDateOrReturnDateAfterAndStatus(LocalDate.now(), LocalDate.now(), OrderStatus.PENDING);
+        List<OrderDTO> pendingOrders = new ArrayList<>();
+        for (OrderEntity orderEntity : pendingOrdersAfterToday) {
+            OrderDTO pickup = modelMapper.map(orderEntity, OrderDTO.class);
+            pickup.setOrderType(OrderType.PICKUP);
+            pendingOrders.add(pickup);
+            if (!orderEntity.getDeliveryDate().isBefore(LocalDate.now())) {
+                OrderDTO delivery = modelMapper.map(orderEntity, OrderDTO.class);
+                delivery.setOrderType(OrderType.DELIVERY);
+                pendingOrders.add(delivery);
+            }
+        }
+
+        List<OrderDTO> orderedList = pendingOrders.stream().sorted((o1, o2) -> {
+            //if both are deliveries, sort by delivery date
+            if (o1.getOrderType().equals(OrderType.DELIVERY) && o2.getOrderType().equals(OrderType.DELIVERY)) {
+                return o1.getDeliveryDate().compareTo(o2.getDeliveryDate());
+            }
+            //if both are pickups, sort by return date
+            if (o1.getOrderType().equals(OrderType.PICKUP) && o2.getOrderType().equals(OrderType.PICKUP)) {
+                return o1.getReturnDate().compareTo(o2.getReturnDate());
+            }
+            //if the left is delivery and the other is pickup
+            if (o1.getOrderType().equals(OrderType.DELIVERY) && o2.getOrderType().equals(OrderType.PICKUP)) {
+                return o1.getDeliveryDate().compareTo(o2.getReturnDate());
+            }
+            //if the left is pickup and the other is delivery
+            return o1.getReturnDate().compareTo(o2.getDeliveryDate());
+        }).toList();
+        return orderedList;
     }
 }

@@ -1,8 +1,7 @@
-package com.example.demo.model;
+package com.example.demo.dto.enums;
 
 public enum OrderStatus {
     PENDING,
-    IN_PROGRESS,
     DELIVERED,
     CANCELLED
 }

@@ -1,5 +1,6 @@
 package com.example.demo.model;
 
+import com.example.demo.dto.enums.OrderStatus;
 import com.example.demo.model.address.AddressEntity;
 import com.example.demo.model.availability.OrderLineEntity;
 import jakarta.persistence.*;
@@ -31,6 +32,6 @@ public class OrderEntity {
     @ManyToOne
     UserEntity customer;
 
-    @OneToMany()
+    @OneToMany(fetch = FetchType.EAGER)
     List<OrderLineEntity> lines;
 }
