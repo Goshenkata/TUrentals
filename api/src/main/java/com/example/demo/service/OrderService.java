@@ -4,10 +4,7 @@ import com.example.demo.dto.common.MessageResponseDTO;
 import com.example.demo.dto.enums.OrderStatus;
 import com.example.demo.dto.enums.OrderType;
 import com.example.demo.dto.enums.RoleEnum;
-import com.example.demo.dto.request.AddressDTO;
-import com.example.demo.dto.request.AssignToEmployeeDTO;
-import com.example.demo.dto.request.ItemNumberPairDTO;
-import com.example.demo.dto.request.OrderCreateDTO;
+import com.example.demo.dto.request.*;
 import com.example.demo.dto.response.OrderDTO;
 import com.example.demo.dto.response.UserDto;
 import com.example.demo.model.ItemEntity;
@@ -40,6 +37,7 @@ public class OrderService {
     private final ItemRepository itemRepository;
     private final OrderLineRepository orderLineRepository;
     private final AssignmentRepository assignmentRepository;
+
 
     @Transactional
     public MessageResponseDTO createOrder(OrderCreateDTO orderCreateDTO, String email) {
@@ -231,11 +229,11 @@ public class OrderService {
     }
 
     private Optional<OrderAssignmentEntity> getAssignment(OrderEntity orderEntity, OrderType orderType) {
-        return orderEntity.getAssignments().stream().filter(orderAssignmentEntity -> orderAssignmentEntity.getOrderType().equals(orderType)).findFirst();
+        return orderEntity.getAssignments().stream().filter(orderAssignmentEntity -> orderAssignmentEntity.getOrderType() == orderType).findFirst();
     }
 
     public List<OrderDTO> getPendingOrders() {
-        List<OrderEntity> pendingOrdersAfterToday = orderRepository.findAllByDeliveryDateOrReturnDateAfterAndStatus(LocalDate.now(), LocalDate.now(), OrderStatus.PENDING);
+        List<OrderEntity> pendingOrdersAfterToday = orderRepository.findUpcomingOrders();
         List<OrderDTO> pendingOrders = new ArrayList<>();
         //splits the orders into deliveries and pickups
         for (OrderEntity orderEntity : pendingOrdersAfterToday) {
@@ -248,7 +246,7 @@ public class OrderService {
             });
 
             //add the delivery
-            if (!orderEntity.getDeliveryDate().isBefore(LocalDate.now())) {
+            if (orderEntity.getStatus() == OrderStatus.PENDING) {
                 OrderDTO delivery = modelMapper.map(orderEntity, OrderDTO.class);
                 delivery.setOrderType(OrderType.DELIVERY);
                 getAssignment(orderEntity, OrderType.DELIVERY).ifPresent(orderAssignmentEntity -> {
@@ -259,22 +257,7 @@ public class OrderService {
             }
         }
 
-        List<OrderDTO> orderedList = pendingOrders.stream().sorted((o1, o2) -> {
-            //if both are deliveries, sort by delivery date
-            if (o1.getOrderType().equals(OrderType.DELIVERY) && o2.getOrderType().equals(OrderType.DELIVERY)) {
-                return o1.getDeliveryDate().compareTo(o2.getDeliveryDate());
-            }
-            //if both are pickups, sort by return date
-            if (o1.getOrderType().equals(OrderType.PICKUP) && o2.getOrderType().equals(OrderType.PICKUP)) {
-                return o1.getReturnDate().compareTo(o2.getReturnDate());
-            }
-            //if the left is delivery and the other is pickup
-            if (o1.getOrderType().equals(OrderType.DELIVERY) && o2.getOrderType().equals(OrderType.PICKUP)) {
-                return o1.getDeliveryDate().compareTo(o2.getReturnDate());
-            }
-            //if the left is pickup and the other is delivery
-            return o1.getReturnDate().compareTo(o2.getDeliveryDate());
-        }).toList();
+        List<OrderDTO> orderedList = pendingOrders.stream().sorted(OrderDTO::compare).toList();
         return orderedList;
     }
 
@@ -306,5 +289,56 @@ public class OrderService {
         orderRepository.save(order.get());
         userRepository.save(employee.get());
         return new MessageResponseDTO(200, String.format("Employee %s assigned to order %s", employee.get().getEmail(), order.get().getId()));
+    }
+
+    public List<OrderDTO> getAssignedOrders(String name) {
+        Optional<UserEntity> employee = userRepository.findByEmail(name);
+        if (employee.isEmpty()) {
+            return List.of();
+        }
+        List<OrderAssignmentEntity> assignments = assignmentRepository.findAllByEmployee(employee.get());
+        List<OrderDTO> orders = new ArrayList<>();
+        for (OrderAssignmentEntity assignment : assignments) {
+            OrderDTO order = modelMapper.map(assignment.getOrder(), OrderDTO.class);
+            order.setOrderType(assignment.getOrderType());
+            orders.add(order);
+        }
+        return orders.stream().sorted(OrderDTO::compare).toList();
+    }
+
+    @Transactional
+    public MessageResponseDTO completeOrder(OrderCompleteDTO orderCompleteDTO, String name) {
+        Optional<UserEntity> user = userRepository.findByEmail(name);
+        if (user.isEmpty()) {
+            return new MessageResponseDTO(400, "User not found");
+        }
+        Optional<OrderEntity> order = orderRepository.findById(orderCompleteDTO.getOrderId());
+        if (order.isEmpty()) {
+            return new MessageResponseDTO(400, "Order not found");
+        }
+        if ((order.get().getStatus() == OrderStatus.COMPLETED) || (order.get().getStatus() == OrderStatus.CANCELLED)) {
+            return new MessageResponseDTO(400, "Order is not pending");
+        }
+        order.get().setStatus(orderCompleteDTO.getOrderStatus());
+        order.get().setNote(orderCompleteDTO.getNote());
+
+        for (OrderLineEntity line : order.get().getLines()) {
+            ItemEntity itemEntity = itemRepository.findById(line.getItem().getId()).get();
+            if (orderCompleteDTO.getOrderStatus() == OrderStatus.COMPLETED) {
+                itemEntity.setCurrentQuantity(itemEntity.getCurrentQuantity() + line.getQuantity());
+                //remove the delivery assignment
+                Optional<OrderAssignmentEntity> pickupAssignment = getAssignment(order.get(), OrderType.PICKUP);
+                pickupAssignment.ifPresent(assignmentRepository::delete);
+            }
+            if (orderCompleteDTO.getOrderStatus() == OrderStatus.DELIVERED) {
+                itemEntity.setCurrentQuantity(itemEntity.getCurrentQuantity() - line.getQuantity());
+                //remove the pickup assignment
+                Optional<OrderAssignmentEntity> pickupAssignment = getAssignment(order.get(), OrderType.DELIVERY);
+                pickupAssignment.ifPresent(assignmentRepository::delete);
+            }
+        }
+
+        orderRepository.save(order.get());
+        return new MessageResponseDTO(200, "Order " + order.get().getId() + " set to " + orderCompleteDTO.getOrderStatus());
     }
 }

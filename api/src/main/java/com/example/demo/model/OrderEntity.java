@@ -28,6 +28,8 @@ public class OrderEntity {
     AddressEntity deliveryAddress;
     @Enumerated
     OrderStatus status;
+    @Column
+    String note;
 
     @ManyToOne
     UserEntity customer;

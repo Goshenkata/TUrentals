@@ -26,6 +26,8 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     @Query("SELECT o FROM OrderEntity o WHERE o.returnDate = :date")
     List<OrderEntity> findAllPickupsOnDate(@Param("date") LocalDate date);
 
-    List<OrderEntity> findAllByDeliveryDateOrReturnDateAfterAndStatus(LocalDate deliveryDate, LocalDate returnDate, OrderStatus status);
+    @Query("SELECT o FROM OrderEntity o WHERE (o.deliveryDate >= CURRENT_DATE OR o.returnDate >= CURRENT_DATE) AND (o.status = com.example.demo.dto.enums.OrderStatus.PENDING OR o.status = com.example.demo.dto.enums.OrderStatus.DELIVERED)")
+    List<OrderEntity> findUpcomingOrders();
+
 
 }
