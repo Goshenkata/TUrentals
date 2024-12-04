@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.common.MessageResponseDTO;
+import com.example.demo.dto.request.AssignToEmployeeDTO;
 import com.example.demo.dto.request.OrderCreateDTO;
 import com.example.demo.dto.response.OrderDTO;
 import com.example.demo.service.OrderService;
@@ -39,4 +40,11 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
+    @PostMapping("assignEmployee")
+    @PreAuthorize("hasAuthority('MANAGER')")
+    @Operation(summary = "For managers, assign an employee to an order")
+    public ResponseEntity<MessageResponseDTO> assignEmployee(@RequestBody AssignToEmployeeDTO assignment) {
+        MessageResponseDTO response = orderService.assignEmployee(assignment);
+        return ResponseEntity.status(response.status()).body(response);
+    }
 }

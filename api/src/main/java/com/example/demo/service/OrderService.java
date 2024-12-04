@@ -3,18 +3,19 @@ package com.example.demo.service;
 import com.example.demo.dto.common.MessageResponseDTO;
 import com.example.demo.dto.enums.OrderStatus;
 import com.example.demo.dto.enums.OrderType;
+import com.example.demo.dto.enums.RoleEnum;
 import com.example.demo.dto.request.AddressDTO;
+import com.example.demo.dto.request.AssignToEmployeeDTO;
 import com.example.demo.dto.request.ItemNumberPairDTO;
 import com.example.demo.dto.request.OrderCreateDTO;
 import com.example.demo.dto.response.OrderDTO;
+import com.example.demo.dto.response.UserDto;
 import com.example.demo.model.ItemEntity;
+import com.example.demo.model.OrderAssignmentEntity;
 import com.example.demo.model.OrderEntity;
 import com.example.demo.model.UserEntity;
 import com.example.demo.model.availability.OrderLineEntity;
-import com.example.demo.repository.ItemRepository;
-import com.example.demo.repository.OrderLineRepository;
-import com.example.demo.repository.OrderRepository;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +39,7 @@ public class OrderService {
     private final ItemService itemService;
     private final ItemRepository itemRepository;
     private final OrderLineRepository orderLineRepository;
+    private final AssignmentRepository assignmentRepository;
 
     @Transactional
     public MessageResponseDTO createOrder(OrderCreateDTO orderCreateDTO, String email) {
@@ -229,17 +230,32 @@ public class OrderService {
         }
     }
 
+    private Optional<OrderAssignmentEntity> getAssignment(OrderEntity orderEntity, OrderType orderType) {
+        return orderEntity.getAssignments().stream().filter(orderAssignmentEntity -> orderAssignmentEntity.getOrderType().equals(orderType)).findFirst();
+    }
+
     public List<OrderDTO> getPendingOrders() {
         List<OrderEntity> pendingOrdersAfterToday = orderRepository.findAllByDeliveryDateOrReturnDateAfterAndStatus(LocalDate.now(), LocalDate.now(), OrderStatus.PENDING);
         List<OrderDTO> pendingOrders = new ArrayList<>();
+        //splits the orders into deliveries and pickups
         for (OrderEntity orderEntity : pendingOrdersAfterToday) {
             OrderDTO pickup = modelMapper.map(orderEntity, OrderDTO.class);
             pickup.setOrderType(OrderType.PICKUP);
             pendingOrders.add(pickup);
+
+            getAssignment(orderEntity, OrderType.PICKUP).ifPresent(orderAssignmentEntity -> {
+                pickup.setAssignenedTo(modelMapper.map(orderAssignmentEntity.getEmployee(), UserDto.class));
+            });
+
+            //add the delivery
             if (!orderEntity.getDeliveryDate().isBefore(LocalDate.now())) {
                 OrderDTO delivery = modelMapper.map(orderEntity, OrderDTO.class);
                 delivery.setOrderType(OrderType.DELIVERY);
+                getAssignment(orderEntity, OrderType.DELIVERY).ifPresent(orderAssignmentEntity -> {
+                    pickup.setAssignenedTo(modelMapper.map(orderAssignmentEntity.getEmployee(), UserDto.class));
+                });
                 pendingOrders.add(delivery);
+
             }
         }
 
@@ -260,5 +276,35 @@ public class OrderService {
             return o1.getReturnDate().compareTo(o2.getDeliveryDate());
         }).toList();
         return orderedList;
+    }
+
+    public MessageResponseDTO assignEmployee(AssignToEmployeeDTO assignment) {
+        Optional<OrderEntity> order = orderRepository.findById(assignment.getOrderId());
+        if (order.isEmpty()) {
+            return new MessageResponseDTO(501, "Order not found");
+        }
+        Optional<UserEntity> employee = userRepository.findById(assignment.getEmployeeId());
+        if (employee.isEmpty() || employee.get().getRole() != RoleEnum.EMPLOYEE) {
+            return new MessageResponseDTO(501, "Employee not found");
+        }
+        //check if the assignment is already made, overwrite it
+        Optional<OrderAssignmentEntity> assignmentEntity = assignmentRepository.findByOrderAndOrderType(order.get(), assignment.getOrderType());
+        if (assignmentEntity.isPresent()) {
+            assignmentEntity.get().setEmployee(employee.get());
+            assignmentRepository.save(assignmentEntity.get());
+        } else {
+            OrderAssignmentEntity newAssignment = new OrderAssignmentEntity();
+            newAssignment.setOrder(order.get());
+            newAssignment.setEmployee(employee.get());
+            newAssignment.setOrderType(assignment.getOrderType());
+
+            order.get().getAssignments().add(newAssignment);
+            employee.get().getAssignments().add(newAssignment);
+
+            assignmentRepository.save(newAssignment);
+        }
+        orderRepository.save(order.get());
+        userRepository.save(employee.get());
+        return new MessageResponseDTO(200, String.format("Employee %s assigned to order %s", employee.get().getEmail(), order.get().getId()));
     }
 }

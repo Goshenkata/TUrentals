@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -16,6 +17,7 @@ public class OrderDTO {
     private LocalDate deliveryDate;
     private LocalDate returnDate;
     private AddressDTO deliveryAddress;
-    private OrderLineDTO lines;
+    private List<OrderLineDTO> lines;
     private OrderType orderType;
+    private UserDto assignenedTo;
 }

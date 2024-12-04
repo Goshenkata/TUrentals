@@ -34,4 +34,7 @@ public class OrderEntity {
 
     @OneToMany(fetch = FetchType.EAGER)
     List<OrderLineEntity> lines;
+
+    @OneToMany(mappedBy = "order")
+    List<OrderAssignmentEntity> assignments;
 }

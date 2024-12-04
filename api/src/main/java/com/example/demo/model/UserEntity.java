@@ -46,4 +46,7 @@ public class UserEntity {
 
     @OneToMany(mappedBy = "customer")
     List<OrderEntity> orders;
+
+    @OneToMany(mappedBy = "employee")
+    List<OrderAssignmentEntity> assignments;
 }
