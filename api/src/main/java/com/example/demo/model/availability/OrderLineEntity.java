@@ -13,7 +13,7 @@ public class OrderLineEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @OneToOne
+    @ManyToOne
     ItemEntity item;
     int quantity;
 }
