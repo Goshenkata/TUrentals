@@ -1,6 +1,7 @@
 package com.example.demo.dto.request;
 
 import com.example.demo.dto.enums.OrderType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
