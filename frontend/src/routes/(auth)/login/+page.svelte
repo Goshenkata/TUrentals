@@ -85,7 +85,7 @@
 						<Form.FieldErrors />
 					</Form.Field>
 				</div>
-				<Form.Button type="submit" class="w-full">Вход</Form.Button>
+				<Form.Button type="submit" disabled={$delayed} class="w-full">Вход</Form.Button>
 			</form>
 			<div class="mt-4 text-center text-sm">
 				Нямаш профил?
