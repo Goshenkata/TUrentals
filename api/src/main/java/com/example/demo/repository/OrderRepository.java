@@ -1,6 +1,6 @@
 package com.example.demo.repository;
 
-import com.example.demo.dto.enums.OrderStatus;
+import com.example.demo.model.ItemEntity;
 import com.example.demo.model.OrderEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,5 +29,6 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     @Query("SELECT o FROM OrderEntity o WHERE (o.deliveryDate >= CURRENT_DATE OR o.returnDate >= CURRENT_DATE) AND (o.status = com.example.demo.dto.enums.OrderStatus.PENDING OR o.status = com.example.demo.dto.enums.OrderStatus.DELIVERED)")
     List<OrderEntity> findUpcomingOrders();
 
+    List<OrderEntity> findAllByReturnDateAfterOrderByReturnDate(LocalDate date);
 
 }

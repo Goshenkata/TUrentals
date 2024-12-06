@@ -37,7 +37,6 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final JWTUtils jwtUtils;
     private final ModelMapper modelMapper;
-    private final UserDetailsServiceImpl userDetailsService;
     private final UserRepository userRepository;
 
     @PostMapping("register")

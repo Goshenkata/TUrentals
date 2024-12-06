@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @NoArgsConstructor
@@ -24,6 +25,18 @@ public class OrderDTO {
     private List<OrderLineDTO> lines;
     private OrderType orderType;
     private UserDto assignenedTo;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        OrderDTO orderDTO = (OrderDTO) o;
+        return Objects.equals(id, orderDTO.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
 
     public static int compare(OrderDTO o1, OrderDTO o2) {
         //if both are deliveries, sort by delivery date
@@ -41,6 +54,4 @@ public class OrderDTO {
         //if the left is pickup and the other is delivery
         return o1.getReturnDate().compareTo(o2.getDeliveryDate());
     }
-
-
 }
