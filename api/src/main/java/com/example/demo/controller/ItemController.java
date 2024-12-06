@@ -4,6 +4,7 @@ import com.example.demo.dto.common.FilterDTO;
 import com.example.demo.dto.common.MessageResponseDTO;
 import com.example.demo.dto.enums.SortBy;
 import com.example.demo.dto.request.ItemCreateDTO;
+import com.example.demo.dto.response.ChangeQuantityResult;
 import com.example.demo.dto.response.ItemDTO;
 import com.example.demo.service.ItemService;
 import com.example.demo.validation.DeliveryBeforeReturn;

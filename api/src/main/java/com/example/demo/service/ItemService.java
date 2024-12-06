@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.dto.common.FilterDTO;
 import com.example.demo.dto.enums.CategoryEnum;
 import com.example.demo.dto.request.ItemCreateDTO;
+import com.example.demo.dto.response.ChangeQuantityResult;
 import com.example.demo.dto.response.ItemDTO;
 import com.example.demo.model.CategoryEntity;
 import com.example.demo.model.ImageEntity;

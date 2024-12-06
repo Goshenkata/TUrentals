@@ -5,6 +5,7 @@ import com.example.demo.dto.enums.OrderStatus;
 import com.example.demo.dto.enums.OrderType;
 import com.example.demo.dto.enums.RoleEnum;
 import com.example.demo.dto.request.*;
+import com.example.demo.dto.response.CreateOrderResultDTO;
 import com.example.demo.dto.response.OrderDTO;
 import com.example.demo.dto.response.UserDto;
 import com.example.demo.model.ItemEntity;
@@ -40,10 +41,10 @@ public class OrderService {
 
 
     @Transactional
-    public MessageResponseDTO createOrder(OrderCreateDTO orderCreateDTO, String email) {
+    public CreateOrderResultDTO createOrder(OrderCreateDTO orderCreateDTO, String email) {
         Optional<UserEntity> customer = userRepository.findByEmail(email);
         if (customer.isEmpty()) {
-            return new MessageResponseDTO(501, "User not found");
+            return new CreateOrderResultDTO(new MessageResponseDTO(404, "User not found"));
         }
 
         OrderEntity orderEntity = modelMapper.map(orderCreateDTO, OrderEntity.class);
@@ -54,16 +55,17 @@ public class OrderService {
         BigDecimal pricePerDay = BigDecimal.ZERO;
         int totalDays = (int) (orderCreateDTO.getReturnDate().toEpochDay() - orderCreateDTO.getDeliveryDate().toEpochDay());
 
+        List<Long> invalidItems = new ArrayList<>();
+
         List<OrderLineEntity> lines = new ArrayList<>();
         for (ItemNumberPairDTO itemDTO : orderCreateDTO.getItems()) {
             Optional<ItemEntity> itemEntity = itemRepository.findById(itemDTO.getItemId());
             if (itemEntity.isEmpty()) {
-                return new MessageResponseDTO(501, "Item not found");
+                return new CreateOrderResultDTO(new MessageResponseDTO(404, "Item not found"));
             }
             int availability = itemService.checkAvailabilityAtDateRange(itemDTO.getItemId(), orderCreateDTO.getDeliveryDate(), orderCreateDTO.getReturnDate());
             if (availability < itemDTO.getQuantity()) {
-                log.warn("Not enough items available");
-                return new MessageResponseDTO(501, "Not enough items available");
+                invalidItems.add(itemDTO.getItemId());
             }
             OrderLineEntity line = new OrderLineEntity();
             line.setItem(itemEntity.get());
@@ -71,12 +73,19 @@ public class OrderService {
             lines.add(line);
             pricePerDay = pricePerDay.add(itemEntity.get().getPricePerDay().multiply(BigDecimal.valueOf(itemDTO.getQuantity())));
         }
+
+        if (!invalidItems.isEmpty()) {
+            log.info("Items not available");
+            return new CreateOrderResultDTO(new MessageResponseDTO(409, "Items not available"), invalidItems);
+        }
+
         orderEntity.setLines(lines);
         orderEntity.setTotalPrice(pricePerDay.multiply(BigDecimal.valueOf(totalDays)));
 
         orderLineRepository.saveAll(lines);
         orderRepository.save(orderEntity);
-        return new MessageResponseDTO(200, "Order " + orderEntity.getId() + " created");
+        log.info("Order " + orderEntity.getId() + " created");
+        return new CreateOrderResultDTO(new MessageResponseDTO(200, "Order " + orderEntity.getId() + " created"));
     }
 
     @Transactional

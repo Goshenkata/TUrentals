@@ -4,6 +4,7 @@ import com.example.demo.dto.common.MessageResponseDTO;
 import com.example.demo.dto.request.AssignToEmployeeDTO;
 import com.example.demo.dto.request.OrderCompleteDTO;
 import com.example.demo.dto.request.OrderCreateDTO;
+import com.example.demo.dto.response.CreateOrderResultDTO;
 import com.example.demo.dto.response.OrderDTO;
 import com.example.demo.service.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,12 +25,13 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("create")
-    public ResponseEntity<MessageResponseDTO> createOrder(@Valid @RequestBody OrderCreateDTO orderCreateDTO, BindingResult bindingResult, Principal principal) {
+    @Operation(summary = "Create a new order, returns 409 if the items are not available")
+    public ResponseEntity<CreateOrderResultDTO> createOrder(@Valid @RequestBody OrderCreateDTO orderCreateDTO, BindingResult bindingResult, Principal principal) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().build();
         }
-        MessageResponseDTO response = orderService.createOrder(orderCreateDTO, principal.getName());
-        return ResponseEntity.status(response.status()).body(response);
+        CreateOrderResultDTO result = orderService.createOrder(orderCreateDTO, principal.getName());
+        return ResponseEntity.status(result.getResult().status()).body(result);
     }
 
     @GetMapping("getPending")
