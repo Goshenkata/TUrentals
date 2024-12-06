@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.common.FilterDTO;
 import com.example.demo.dto.enums.CategoryEnum;
 import com.example.demo.dto.request.ItemCreateDTO;
 import com.example.demo.dto.response.ItemDTO;
@@ -13,13 +14,17 @@ import com.example.demo.repository.*;
 import jakarta.validation.constraints.Future;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.xdrop.fuzzywuzzy.FuzzySearch;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -118,12 +123,51 @@ public class ItemService {
     }
 
 
-    public List<ItemDTO> search() {
-        List<ItemEntity> items = itemRepository.findAll();
-        return items.stream().map(item -> mapper.map(item, ItemDTO.class)).toList();
+    public List<ItemDTO> search(FilterDTO filter) {
+        List<ItemDTO> items = new java.util.ArrayList<>(itemRepository.findAll().stream().map(item -> mapper.map(item, ItemDTO.class)).toList());
+        if (filter.getCategory() != null) {
+            items.removeIf(item -> !item.getCategoryName().equals(filter.getCategory()));
+        }
+        if (filter.getPriceFrom() != null) {
+            items.removeIf(item -> item.getPricePerDay().compareTo(filter.getPriceFrom()) < 0);
+        }
+        if (filter.getPriceTo() != null) {
+            items.removeIf(item -> item.getPricePerDay().compareTo(filter.getPriceTo()) > 0);
+        }
+
+        if (filter.getSortBy() != null) {
+            items.sort((o1, o2) -> ItemDTO.compare(o1, o2, filter.getSortBy()));
+        }
+
+        if (filter.getNameQuery() != null) {
+            items = getTopFuzzyMatches(items, filter.getNameQuery(), 10);
+        }
+
+        return items;
     }
 
-    public int checkAvailabilityAtDateRange(Long itemId, @Future LocalDate devileryDate, @Future LocalDate returnDate) {
+    public static List<ItemDTO> getTopFuzzyMatches(List<ItemDTO> items, String query, int topN) {
+        // Create a map to store the item and its fuzzy match score
+        Map<ItemDTO, Integer> scoreMap = new HashMap<>();
+
+        // Calculate the fuzzy match score for each item
+        for (ItemDTO item : items) {
+            int score = FuzzySearch.ratio(item.getName(), query); // Compare names with query
+            scoreMap.put(item, score);
+        }
+
+        // Sort by score in descending order and get the top N items
+        return scoreMap.entrySet()
+                .stream()
+                .sorted((e1, e2) -> Integer.compare(e2.getValue(), e1.getValue())) // Descending order
+                .limit(topN)
+                .map(Map.Entry::getKey) // Get only the ItemDTO
+                .collect(Collectors.toList());
+    }
+
+
+    public int checkAvailabilityAtDateRange(Long itemId, @Future LocalDate devileryDate, @Future LocalDate
+            returnDate) {
         ItemEntity item = itemRepository.findById(itemId).orElseThrow();
         int currentQuantity = getQuantityAtDeliveryDate(item, devileryDate);
         log.debug("Current quantity at delivery date: {}", currentQuantity);

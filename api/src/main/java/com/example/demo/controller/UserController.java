@@ -7,6 +7,8 @@ import com.example.demo.dto.request.RegistrationDTO;
 import com.example.demo.dto.response.UserDto;
 import com.example.demo.dto.response.JWTDTO;
 import com.example.demo.dto.request.LoginDTO;
+import com.example.demo.model.UserEntity;
+import com.example.demo.repository.UserRepository;
 import com.example.demo.service.UserDetailsServiceImpl;
 import com.example.demo.service.UserService;
 import com.example.demo.utils.JWTUtils;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @RequestMapping("/user/")
 @RestController
@@ -35,6 +38,7 @@ public class UserController {
     private final JWTUtils jwtUtils;
     private final ModelMapper modelMapper;
     private final UserDetailsServiceImpl userDetailsService;
+    private final UserRepository userRepository;
 
     @PostMapping("register")
     @Operation(summary = "Register a new user")
@@ -65,13 +69,12 @@ public class UserController {
 
     @GetMapping("isValid")
         //gets the user from the token and checks if the user is valid
-    ResponseEntity<?> isValid(Principal principal, @RequestHeader("Authorization") String token) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(principal.getName());
-        token = token.substring(7);
-        if (userDetails != null) {
-            return ResponseEntity.ok(new JWTDTO(userDetails.getUsername(), token, userDetails.getAuthorities().toArray()[0].toString()));
+    ResponseEntity<UserDto> isValid(Principal principal, @RequestHeader("Authorization") String token) {
+        Optional<UserEntity> byEmail = userRepository.findByEmail(principal.getName());
+        if (byEmail.isEmpty()) {
+            return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok(modelMapper.map(byEmail.get(), UserDto.class));
     }
 
 

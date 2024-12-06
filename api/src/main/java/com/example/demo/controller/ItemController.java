@@ -31,19 +31,16 @@ public class ItemController {
         Long id = itemService.createItem(itemCreateDTO);
         return id != -1 ? ResponseEntity.ok(id) : ResponseEntity.badRequest().build();
     }
-//    //todo add pagination and search
-//    @GetMapping("search")
-//    public ResponseEntity<List<ItemDTO>> searchItems(
-//            @RequestParam String nameQuery,
-//            @RequestParam(required = false) BigDecimal priceFrom,
-//            @RequestParam(required = false) BigDecimal priceTo,
-//            @RequestParam(required = false) String category,
-//            @RequestParam(required = false) SortBy sortBy,
-//            Pageable pageable
-//    ) {
-//        FilterDTO
-//        List<ItemDTO> items = itemService.search();
-//        return ResponseEntity.ok(items);
-//    }
-
+    @GetMapping("search")
+    public ResponseEntity<List<ItemDTO>> searchItems(
+            @RequestParam(required = false) String nameQuery,
+            @RequestParam(required = false) BigDecimal priceFrom,
+            @RequestParam(required = false) BigDecimal priceTo,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) SortBy sortBy
+    ) {
+        FilterDTO filter = new FilterDTO(nameQuery, priceFrom, priceTo, category, sortBy);
+        List<ItemDTO> items = itemService.search(filter);
+        return ResponseEntity.ok(items);
+    }
 }
