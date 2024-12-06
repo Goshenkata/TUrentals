@@ -25,7 +25,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("create")
-    @Operation(summary = "Create a new order, returns 409 if the items are not available")
+    @Operation(summary = "Create a new order, if the items are not available it reurns the items Ids and the available quantity")
     public ResponseEntity<CreateOrderResultDTO> createOrder(@Valid @RequestBody OrderCreateDTO orderCreateDTO, BindingResult bindingResult, Principal principal) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().build();

@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class CreateOrderResultDTO {
-    List<Long> itemsThatCannotBeOrdered;
+    List<OrderLineDTO> itemsThatCannotBeOrdered;
     MessageResponseDTO result;
 
     public CreateOrderResultDTO(MessageResponseDTO result) {
@@ -18,7 +18,7 @@ public class CreateOrderResultDTO {
         itemsThatCannotBeOrdered = new ArrayList<>();
     }
 
-    public CreateOrderResultDTO(MessageResponseDTO itemsNotAvailable, List<Long> invalidItems) {
+    public CreateOrderResultDTO(MessageResponseDTO itemsNotAvailable, List<OrderLineDTO> invalidItems) {
         this.result = itemsNotAvailable;
         this.itemsThatCannotBeOrdered = invalidItems;
     }

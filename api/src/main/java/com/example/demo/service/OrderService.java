@@ -7,6 +7,7 @@ import com.example.demo.dto.enums.RoleEnum;
 import com.example.demo.dto.request.*;
 import com.example.demo.dto.response.CreateOrderResultDTO;
 import com.example.demo.dto.response.OrderDTO;
+import com.example.demo.dto.response.OrderLineDTO;
 import com.example.demo.dto.response.UserDto;
 import com.example.demo.model.ItemEntity;
 import com.example.demo.model.OrderAssignmentEntity;
@@ -55,7 +56,7 @@ public class OrderService {
         BigDecimal pricePerDay = BigDecimal.ZERO;
         int totalDays = (int) (orderCreateDTO.getReturnDate().toEpochDay() - orderCreateDTO.getDeliveryDate().toEpochDay());
 
-        List<Long> invalidItems = new ArrayList<>();
+        List<OrderLineDTO> invalidItems = new ArrayList<>();
 
         List<OrderLineEntity> lines = new ArrayList<>();
         for (ItemNumberPairDTO itemDTO : orderCreateDTO.getItems()) {
@@ -65,7 +66,10 @@ public class OrderService {
             }
             int availability = itemService.checkAvailabilityAtDateRange(itemDTO.getItemId(), orderCreateDTO.getDeliveryDate(), orderCreateDTO.getReturnDate());
             if (availability < itemDTO.getQuantity()) {
-                invalidItems.add(itemDTO.getItemId());
+                OrderLineDTO orderLineDTO = new OrderLineDTO();
+                orderLineDTO.setItemId(itemDTO.getItemId());
+                orderLineDTO.setQuantity(availability);
+                invalidItems.add(orderLineDTO);
             }
             OrderLineEntity line = new OrderLineEntity();
             line.setItem(itemEntity.get());
