@@ -10,7 +10,8 @@
 		Users,
 		PackagePlus,
 		Settings,
-		BookOpen
+		BookOpen,
+		Package
 	} from 'lucide-svelte/icons';
 	import { page } from '$app/stores';
 	import { Badge } from './ui/badge';
@@ -71,10 +72,7 @@
 					</Sidebar.MenuBadge>
 				</Sidebar.MenuItem>
 
-				<Collapsible.Root
-					open={$page.url.pathname.includes('/locations')}
-					class="group/collapsible"
-				>
+				<Collapsible.Root open={$page.url.pathname.includes('/catalog')} class="group/collapsible">
 					{#snippet child({ props })}
 						<Sidebar.MenuItem {...props}>
 							<Collapsible.Trigger>
@@ -94,10 +92,25 @@
 							<Collapsible.Content>
 								<Sidebar.MenuSub>
 									<Sidebar.MenuSubItem>
-										<Sidebar.MenuSubButton isActive={$page.url.pathname === '/dashboard/products'}>
+										<Sidebar.MenuSubButton
+											isActive={$page.url.pathname === '/dashboard/catalog/categories'}
+										>
 											{#snippet child({ props })}
-												<a href="/dashboard/products" {...props}>
+												<a href="/dashboard/catalog/categories" {...props}>
 													<Boxes />
+													<span>Категории</span>
+												</a>
+											{/snippet}
+										</Sidebar.MenuSubButton>
+									</Sidebar.MenuSubItem>
+
+									<Sidebar.MenuSubItem>
+										<Sidebar.MenuSubButton
+											isActive={$page.url.pathname === '/dashboard/catalog/products'}
+										>
+											{#snippet child({ props })}
+												<a href="/dashboard/catalog/products" {...props}>
+													<Package />
 													<span>Продукти</span>
 												</a>
 											{/snippet}
@@ -106,10 +119,10 @@
 
 									<Sidebar.MenuSubItem>
 										<Sidebar.MenuSubButton
-											isActive={$page.url.pathname === '/dashboard/products/new'}
+											isActive={$page.url.pathname === '/dashboard/catalog/products/new'}
 										>
 											{#snippet child({ props })}
-												<a href="/dashboard/products/new" {...props}>
+												<a href="/dashboard/catalog/products/new" {...props}>
 													<PackagePlus />
 													<span>Добавяне на продукт</span>
 												</a>
