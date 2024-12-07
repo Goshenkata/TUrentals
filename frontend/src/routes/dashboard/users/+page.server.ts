@@ -72,7 +72,11 @@ export const actions: Actions = {
 			);
 
 			if (foundUser.ok) {
-				return { form, userNotUnique: true };
+				const [user] = await foundUser.json();
+
+				console.log(user);
+
+				if (user) return { form, emailExists: true };
 			}
 		} catch (_) {}
 
@@ -87,14 +91,16 @@ export const actions: Actions = {
 				body: JSON.stringify(form.data)
 			});
 
+			console.log(response);
+
 			if (!response.ok) {
-				return error(500, 'Failed to create user');
+				return { form, errorCreateUser: true };
 			}
 
 			return { form, createUserSuccess: true };
 		} catch (err) {
 			console.log(err);
-			return error(500, 'Failed to create user');
+			return { form, errorCreateUser: true };
 		}
 	},
 

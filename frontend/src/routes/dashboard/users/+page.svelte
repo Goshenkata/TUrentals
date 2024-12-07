@@ -59,7 +59,7 @@
 			toast.success('Успешно изтрит профил.');
 		}
 
-		if (form?.userNotUnique) {
+		if (form?.emailExists) {
 			toast.error('Потребител с този имейл вече съществува.');
 		}
 
@@ -73,6 +73,10 @@
 
 		if (form?.errorEditUser) {
 			toast.error('Възникна грешка при редактирането на профила.');
+		}
+
+		if (form?.errorCreateUser) {
+			toast.error('Възникна грешка при създаването на профила.');
 		}
 	});
 </script>
