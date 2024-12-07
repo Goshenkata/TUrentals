@@ -3,7 +3,6 @@ import type { Actions, PageServerLoad } from './$types';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { registerSchema } from './schema';
-import { setAuthenticationCookies } from '$lib/server/authCookies';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) {

@@ -29,12 +29,11 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		}
 
 		const user = await res.json();
+		user.token = token;
 		event.locals.user = user;
 	} catch {
 		event.locals.user = null;
 	}
-
-	// console.log(event.locals.user);
 
 	return resolve(event);
 };
@@ -45,6 +44,7 @@ const authGuard: Handle = async ({ event, resolve }) => {
 	if (
 		locals.user?.role !== 'ADMIN' &&
 		locals.user?.role !== 'MANAGER' &&
+		locals.user?.role !== 'EMPLOYEE' &&
 		event.url.pathname.startsWith('/dashboard')
 	) {
 		redirect(303, '/');

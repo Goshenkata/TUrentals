@@ -4,6 +4,7 @@ import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { loginSchema } from './schema';
 import { setAuthenticationCookies } from '$lib/server/authCookies';
+import type { LoginInfo } from '$lib/types';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) {
@@ -24,7 +25,7 @@ export const actions: Actions = {
 
 		const { email, password } = form.data;
 
-		let user: null | User = null;
+		let loginInfo: null | LoginInfo = null;
 
 		try {
 			const res = await fetch('https://tu-rentals-api.webdevlimited.eu/user/login', {
@@ -43,17 +44,19 @@ export const actions: Actions = {
 				return { form, wrongCreds: true };
 			}
 
-			user = await res.json();
+			loginInfo = await res.json();
 		} catch (err) {
 			console.log(err);
 			return { form, errorLogin: true };
 		}
 
-		if (user) {
-			setAuthenticationCookies(cookies, user.token);
+		if (loginInfo) {
+			setAuthenticationCookies(cookies, loginInfo.token);
 
-			switch (user.role) {
+			switch (loginInfo.role) {
 				case 'ADMIN':
+					redirect(302, '/dashboard');
+				case 'EMPLOYEE':
 					redirect(302, '/dashboard');
 				case 'MANAGER':
 					redirect(302, '/dashboard');
