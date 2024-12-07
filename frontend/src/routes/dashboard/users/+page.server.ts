@@ -1,8 +1,8 @@
-import { error } from '@sveltejs/kit';
+import { error, type Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { superValidate } from 'sveltekit-superforms';
+import { fail, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import { editUserSchema, newUserSchema } from './schema';
+import { deleteUserSchema, editUserSchema, newUserSchema } from './schema';
 import type { NonNullableUser } from '$lib/types';
 
 export const load: PageServerLoad = async ({ locals, fetch }) => {
@@ -12,6 +12,7 @@ export const load: PageServerLoad = async ({ locals, fetch }) => {
 
 	const newUserForm = await superValidate(zod(newUserSchema));
 	const editUserForm = await superValidate(zod(editUserSchema));
+	const deleteUserForm = await superValidate(zod(deleteUserSchema));
 
 	try {
 		const response = await fetch('https://tu-rentals-api.webdevlimited.eu/user/getUsers', {
@@ -26,9 +27,95 @@ export const load: PageServerLoad = async ({ locals, fetch }) => {
 
 		const users: NonNullableUser[] = await response.json();
 
-		return { users, newUserForm, editUserForm };
+		return { users, newUserForm, editUserForm, deleteUserForm };
 	} catch (err) {
 		console.log(err);
 		return error(500, 'Failed to fetch users');
+	}
+};
+
+export const actions: Actions = {
+	registerUser: async ({ request, fetch, locals }) => {
+		if (!locals.user || locals.user.role !== 'ADMIN') {
+			return error(403, 'Forbidden');
+		}
+
+		const form = await superValidate(request, zod(newUserSchema));
+
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		// Check if the email exists
+		try {
+			const foundUser = await fetch(
+				`https://tu-rentals-api.webdevlimited.eu/user/getUsers?email=${form.data.email}`,
+				{
+					headers: {
+						Authorization: `Bearer ${locals.user.token}`
+					}
+				}
+			);
+
+			if (foundUser.ok) {
+				return { form, userNotUnique: true };
+			}
+		} catch (_) {}
+
+		try {
+			const response = await fetch('https://tu-rentals-api.webdevlimited.eu/user/createUser', {
+				headers: {
+					Authorization: `Bearer ${locals.user.token}`,
+					Accept: 'application/json',
+					'Content-Type': 'application/json'
+				},
+				method: 'POST',
+				body: JSON.stringify(form.data)
+			});
+
+			if (!response.ok) {
+				return error(500, 'Failed to create user');
+			}
+
+			return { form, createUserSuccess: true };
+		} catch (err) {
+			console.log(err);
+			return error(500, 'Failed to create user');
+		}
+	},
+
+	deleteUser: async ({ request, fetch, locals }) => {
+		if (!locals.user || locals.user.role !== 'ADMIN') {
+			return error(403, 'Forbidden');
+		}
+
+		const form = await superValidate(request, zod(deleteUserSchema));
+
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		try {
+			const response = await fetch(
+				`https://tu-rentals-api.webdevlimited.eu/user/deleteUser/${encodeURIComponent(form.data.email)}`,
+				{
+					headers: {
+						Authorization: `Bearer ${locals.user.token}`
+					},
+					method: 'DELETE'
+				}
+			);
+
+			console.log(response);
+
+			if (!response.ok) {
+				return { form, errorDeleteUser: true };
+			}
+
+			return { form, deleteUserSuccess: true };
+		} catch (err) {
+			console.log(err);
+			return { form, errorDeleteUser: true };
+		}
 	}
 };

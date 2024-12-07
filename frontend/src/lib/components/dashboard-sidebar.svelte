@@ -7,18 +7,10 @@
 		Boxes,
 		CalendarRange,
 		LayoutDashboard,
-		ParkingSquare,
 		Users,
-		MapPinPlus,
-		Earth,
-		ListChecks,
-		Car,
-		Pencil,
-		Factory,
-		ListTodo,
+		PackagePlus,
 		Settings,
-		Megaphone,
-		MapPinned
+		BookOpen
 	} from 'lucide-svelte/icons';
 	import { page } from '$app/stores';
 	import { Badge } from './ui/badge';
@@ -66,11 +58,11 @@
 				</Sidebar.MenuItem>
 
 				<Sidebar.MenuItem>
-					<Sidebar.MenuButton isActive={$page.url.pathname.includes('/dashboard/reservations')}>
+					<Sidebar.MenuButton isActive={$page.url.pathname.includes('/dashboard/orders')}>
 						{#snippet child({ props })}
-							<a href="/dashboard/reservations" {...props}>
+							<a href="/dashboard/orders" {...props}>
 								<CalendarRange />
-								<span>Резервации</span>
+								<span>Поръчки ?</span>
 							</a>
 						{/snippet}
 					</Sidebar.MenuButton>
@@ -89,10 +81,10 @@
 								{#snippet child({ props })}
 									<Sidebar.MenuButton {...props}>
 										{#snippet tooltipContent()}
-											Обекти
+											Каталог
 										{/snippet}
-										<MapPinned />
-										<span>Обекти</span>
+										<BookOpen />
+										<span>Каталог</span>
 										<ChevronRight
 											class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
 										/>
@@ -102,11 +94,11 @@
 							<Collapsible.Content>
 								<Sidebar.MenuSub>
 									<Sidebar.MenuSubItem>
-										<Sidebar.MenuSubButton isActive={$page.url.pathname === '/dashboard/locations'}>
+										<Sidebar.MenuSubButton isActive={$page.url.pathname === '/dashboard/products'}>
 											{#snippet child({ props })}
-												<a href="/dashboard/locations" {...props}>
-													<ParkingSquare />
-													<span>Паркинги</span>
+												<a href="/dashboard/products" {...props}>
+													<Boxes />
+													<span>Продукти</span>
 												</a>
 											{/snippet}
 										</Sidebar.MenuSubButton>
@@ -114,12 +106,12 @@
 
 									<Sidebar.MenuSubItem>
 										<Sidebar.MenuSubButton
-											isActive={$page.url.pathname === '/dashboard/locations/new'}
+											isActive={$page.url.pathname === '/dashboard/products/new'}
 										>
 											{#snippet child({ props })}
-												<a href="/dashboard/locations/new" {...props}>
-													<MapPinPlus />
-													<span>Добавяне на обект</span>
+												<a href="/dashboard/products/new" {...props}>
+													<PackagePlus />
+													<span>Добавяне на продукт</span>
 												</a>
 											{/snippet}
 										</Sidebar.MenuSubButton>
@@ -129,61 +121,6 @@
 						</Sidebar.MenuItem>
 					{/snippet}
 				</Collapsible.Root>
-
-				<Sidebar.MenuItem>
-					<Sidebar.MenuButton isActive={$page.url.pathname === '/dashboard/partners'}>
-						{#snippet child({ props })}
-							<a href="/dashboard/partners" {...props}>
-								<Users />
-								<span>Партньори</span>
-							</a>
-						{/snippet}
-					</Sidebar.MenuButton>
-				</Sidebar.MenuItem>
-
-				<Sidebar.MenuItem>
-					<Sidebar.MenuButton isActive={$page.url.pathname.includes('/dashboard/regions')}>
-						{#snippet child({ props })}
-							<a href="/dashboard/regions" {...props}>
-								<Earth />
-								<span>Региони</span>
-							</a>
-						{/snippet}
-					</Sidebar.MenuButton>
-				</Sidebar.MenuItem>
-
-				<Sidebar.MenuItem>
-					<Sidebar.MenuButton isActive={$page.url.pathname.includes('/dashboard/features')}>
-						{#snippet child({ props })}
-							<a href="/dashboard/features" {...props}>
-								<ListChecks />
-								<span>Особености</span>
-							</a>
-						{/snippet}
-					</Sidebar.MenuButton>
-				</Sidebar.MenuItem>
-
-				<Sidebar.MenuItem>
-					<Sidebar.MenuButton isActive={$page.url.pathname.includes('/dashboard/vehicles')}>
-						{#snippet child({ props })}
-							<a href="/dashboard/vehicles" {...props}>
-								<Car />
-								<span>Видове МПС</span>
-							</a>
-						{/snippet}
-					</Sidebar.MenuButton>
-				</Sidebar.MenuItem>
-
-				<Sidebar.MenuItem>
-					<Sidebar.MenuButton isActive={$page.url.pathname.includes('/dashboard/marketing')}>
-						{#snippet child({ props })}
-							<a href="/dashboard/marketing" {...props}>
-								<Megaphone />
-								<span>Маркетинг</span>
-							</a>
-						{/snippet}
-					</Sidebar.MenuButton>
-				</Sidebar.MenuItem>
 
 				<Sidebar.MenuItem>
 					<Sidebar.MenuButton isActive={$page.url.pathname.includes('/dashboard/users')}>

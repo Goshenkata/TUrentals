@@ -20,54 +20,35 @@
 
 	const newUserForm = superForm(data.newUserForm, {
 		validators: zodClient(newUserSchema),
-		resetForm: true
+		resetForm: false
 	});
 
 	setContext('editUserForm', data.editUserForm);
+	setContext('deleteUserForm', data.deleteUserForm);
 
 	const { form: formData, enhance: createEnhance, delayed } = newUserForm;
 
 	let toggled = $state(false);
 
-	// $effect(() => {
-	// 	if (form?.addVehicleSuccess) {
-	// 		toast.success('Успешно добавен вид МПС.');
-	// 		openCreate = false;
-	// 	}
+	$effect(() => {
+		if (form?.createUserSuccess) {
+			toast.success('Успешно създаден профил.');
+			newUserForm.reset();
+			openCreate = false;
+		}
 
-	// 	if (form?.addVehicleError) {
-	// 		toast.error('Нещо се обърка при създаването на вида МПС.');
-	// 	}
+		if (form?.deleteUserSuccess) {
+			toast.success('Успешно изтрит профил.');
+		}
 
-	// 	if (form?.updateVehicleSuccess) {
-	// 		toast.success('Успешно редактиран вид МПС.');
-	// 		openCreate = false;
-	// 	}
+		if (form?.userNotUnique) {
+			toast.error('Потребител с този имейл вече съществува.');
+		}
 
-	// 	if (form?.updateVehicleError) {
-	// 		toast.error('Нещо се обърка при редактирането на вида МПС.');
-	// 	}
-
-	// 	if (form?.vehicleAlreadyExists) {
-	// 		toast.warning('Вече съществува вид МПС с това име.');
-	// 	}
-
-	// 	if (form?.deleteVehicleSuccess) {
-	// 		toast.success('Успешно изтрит вид МПС.');
-	// 	}
-
-	// 	if (form?.deleteVehicleError) {
-	// 		toast.error('Нещо се обърка при изтриването на вида МПС.');
-	// 	}
-
-	// 	if (form?.massDeleteVehiclesSuccess) {
-	// 		toast.success('Успешно изтрити видове МПС.');
-	// 	}
-
-	// 	if (form?.massDeleteVehiclesError) {
-	// 		toast.error('Нещо се обърка при изтриването на видовете МПС.');
-	// 	}
-	// });
+		if (form?.errorDeleteUser) {
+			toast.error('Възникна грешка при изтриването на профила.');
+		}
+	});
 </script>
 
 <div

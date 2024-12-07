@@ -8,11 +8,15 @@
 	import * as Form from '$lib/components/ui/form';
 	import * as Select from '$lib/components/ui/select';
 	import { Input } from '$lib/components/ui/input';
-	import type { SuperValidated, Infer } from 'sveltekit-superforms';
+	import type { SuperValidated } from 'sveltekit-superforms';
 	import { superForm } from 'sveltekit-superforms';
-	import { editUserSchema, type EditUserSchema } from './schema';
+	import {
+		deleteUserSchema,
+		editUserSchema,
+		type DeleteUserSchema,
+		type EditUserSchema
+	} from './schema';
 	import { zodClient } from 'sveltekit-superforms/adapters';
-	import { ScrollArea } from '$lib/components/ui/scroll-area';
 	import { getContext } from 'svelte';
 	import TogglePassword from '$lib/components/TogglePassword.svelte';
 	import type { NonNullableUser } from '$lib/types';
@@ -24,21 +28,32 @@
 	let { user }: Props = $props();
 
 	const editUserFormData: SuperValidated<EditUserSchema> = getContext('editUserForm');
+	const deleteUserFormData: SuperValidated<DeleteUserSchema> = getContext('editUserForm');
 
 	const editUserForm = superForm(editUserFormData, {
 		validators: zodClient(editUserSchema),
 		resetForm: false
 	});
 
-	const { form: formData, enhance: editEnhace, delayed } = editUserForm;
+	const deleteUserForm = superForm(deleteUserFormData, {
+		validators: zodClient(deleteUserSchema),
+		resetForm: true,
+		dataType: 'json'
+	});
 
-	$formData.id = user.id;
-	$formData.firstName = user.firstName;
-	$formData.lastName = user.lastName;
-	$formData.phoneNumber = user.phoneNumber;
-	$formData.email = user.email;
-	$formData.password = '';
-	$formData.role = user.role;
+	const { form: editFormData, enhance: editEnhace, delayed: editDelayed } = editUserForm;
+
+	const { form: deleteFormData, enhance: deleteEnhace, delayed: deleteDelayed } = deleteUserForm;
+
+	$deleteFormData.email = user.email;
+
+	$editFormData.id = user.id;
+	$editFormData.firstName = user.firstName;
+	$editFormData.lastName = user.lastName;
+	$editFormData.phoneNumber = user.phoneNumber;
+	$editFormData.email = user.email;
+	$editFormData.password = '';
+	$editFormData.role = user.role;
 
 	let open = $state(false);
 	let openEdit = $state(false);
@@ -99,8 +114,6 @@
 		<Dialog.Footer>
 			<div class="flex w-full justify-center gap-4">
 				<form action="?/deleteUser" method="POST" use:enhance>
-					<input type="hidden" name="email" value={user.email} />
-
 					<Button
 						type="submit"
 						onclick={() => {
@@ -133,7 +146,12 @@
 					<Form.Control>
 						{#snippet children({ props })}
 							<Form.Label>Име</Form.Label>
-							<Input {...props} disabled={$delayed} bind:value={$formData.firstName} type="text" />
+							<Input
+								{...props}
+								disabled={$editDelayed}
+								bind:value={$editFormData.firstName}
+								type="text"
+							/>
 						{/snippet}
 					</Form.Control>
 					<Form.FieldErrors />
@@ -143,7 +161,12 @@
 					<Form.Control>
 						{#snippet children({ props })}
 							<Form.Label>Фамилия</Form.Label>
-							<Input {...props} disabled={$delayed} bind:value={$formData.lastName} type="text" />
+							<Input
+								{...props}
+								disabled={$editDelayed}
+								bind:value={$editFormData.lastName}
+								type="text"
+							/>
 						{/snippet}
 					</Form.Control>
 					<Form.FieldErrors />
@@ -154,9 +177,9 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Роля</Form.Label>
-						<Select.Root type="single" bind:value={$formData.role} name={props.name}>
+						<Select.Root type="single" bind:value={$editFormData.role} name={props.name}>
 							<Select.Trigger {...props}>
-								{$formData.role ? $formData.role : 'Иберете роля'}
+								{$editFormData.role ? $editFormData.role : 'Иберете роля'}
 							</Select.Trigger>
 							<Select.Content>
 								{#each Object.keys(Role) as role}
@@ -175,8 +198,8 @@
 						<Form.Label>Телефон</Form.Label>
 						<Input
 							{...props}
-							disabled={$delayed}
-							bind:value={$formData.phoneNumber}
+							disabled={$editDelayed}
+							bind:value={$editFormData.phoneNumber}
 							type="text"
 							placeholder="088...."
 						/>
@@ -191,8 +214,8 @@
 						<Form.Label>Имейл</Form.Label>
 						<Input
 							{...props}
-							disabled={$delayed}
-							bind:value={$formData.email}
+							disabled={$editDelayed}
+							bind:value={$editFormData.email}
 							type="email"
 							placeholder="m@example.com"
 						/>
@@ -209,8 +232,8 @@
 						<div class="relative">
 							<Input
 								{...props}
-								disabled={$delayed}
-								bind:value={$formData.password}
+								disabled={$editDelayed}
+								bind:value={$editFormData.password}
 								type={toggled ? 'text' : 'password'}
 								required
 							/>
@@ -220,7 +243,7 @@
 									toggled = !toggled;
 								}}
 								type="button"
-								disabled={$delayed}
+								disabled={$editDelayed}
 								form="_!"
 								class="absolute right-2 top-1.5 text-muted-foreground hover:cursor-pointer"
 							>
@@ -234,13 +257,13 @@
 
 			<Dialog.Footer>
 				<div class="flex w-full justify-center gap-4">
-					<Form.Button type="submit" disabled={$delayed}>Запази</Form.Button>
+					<Form.Button type="submit" disabled={$editDelayed}>Запази</Form.Button>
 
 					<Button
 						onclick={() => {
 							openEdit = false;
 						}}
-						disabled={$delayed}
+						disabled={$editDelayed}
 						variant="outline"
 					>
 						Отказ

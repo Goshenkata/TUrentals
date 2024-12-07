@@ -44,3 +44,7 @@ export const editUserSchema = memberSchema.extend({
 });
 
 export type EditUserSchema = z.infer<typeof editUserSchema>;
+
+export const deleteUserSchema = z.object({ email: z.string() });
+
+export type DeleteUserSchema = z.infer<typeof deleteUserSchema>;
