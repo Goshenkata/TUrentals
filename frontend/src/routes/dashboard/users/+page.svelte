@@ -13,6 +13,11 @@
 	import TogglePassword from '$lib/components/TogglePassword.svelte';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import { Role } from '$lib/enums.js';
+	import * as Card from '$lib/components/ui/card';
+	import Label from '$lib/components/ui/label/label.svelte';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
+	import { generateUrlParams } from '$lib/utils.js';
 
 	let { data, form } = $props();
 
@@ -29,6 +34,19 @@
 	const { form: formData, enhance: createEnhance, delayed } = newUserForm;
 
 	let toggled = $state(false);
+
+	let selectdEmail = $state($page.url.searchParams.get('email') || '');
+	let selectdRole = $state($page.url.searchParams.get('role') || '');
+
+	const initSearch = async () => {
+		await goto($page.url.pathname + generateUrlParams({ email: selectdEmail, role: selectdRole }));
+	};
+
+	const clearFilters = async () => {
+		await goto($page.url.pathname);
+		selectdEmail = '';
+		selectdRole = '';
+	};
 
 	$effect(() => {
 		if (form?.createUserSuccess) {
@@ -47,6 +65,14 @@
 
 		if (form?.errorDeleteUser) {
 			toast.error('Възникна грешка при изтриването на профила.');
+		}
+
+		if (form?.editUserSuccess) {
+			toast.success('Успешно редактиран профил.');
+		}
+
+		if (form?.errorEditUser) {
+			toast.error('Възникна грешка при редактирането на профила.');
 		}
 	});
 </script>
@@ -71,6 +97,36 @@
 		><PlusCircle class="h-5 w-5 max-md:h-4 max-md:w-4" /> Добави потребител</Button
 	>
 </div>
+
+<Card.Root class="mx-auto w-full">
+	<Card.Header>
+		<Card.Title>Филтри</Card.Title>
+	</Card.Header>
+	<Card.Content class="grid sm:grid-cols-2 gap-3 sm:gap-6">
+		<div class="grid gap-3">
+			<Label>Имейл</Label>
+			<Input type="email" bind:value={selectdEmail}></Input>
+		</div>
+
+		<div class="grid gap-3">
+			<Label>Роля</Label>
+			<Select.Root type="single" bind:value={selectdRole}>
+				<Select.Trigger class="">{selectdRole}</Select.Trigger>
+				<Select.Content>
+					<!-- <Select.Item disabled value="" label="" /> -->
+
+					{#each Object.keys(Role) as role}
+						<Select.Item value={role} label={role} />
+					{/each}
+				</Select.Content>
+			</Select.Root>
+		</div>
+	</Card.Content>
+	<Card.Footer class="flex flex-col sm:flex-row gap-2 flex-wrap justify-between">
+		<Button onclick={initSearch} class="max-sm:w-full">Търси</Button>
+		<Button variant="destructive" onclick={clearFilters} class="max-sm:w-full">Изчисти</Button>
+	</Card.Footer>
+</Card.Root>
 
 {#if data.users && data.users.length > 0}
 	<div class="">

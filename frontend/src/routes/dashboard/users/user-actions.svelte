@@ -140,7 +140,7 @@
 		<Dialog.Header>
 			<Dialog.Title>Редактиране на потребител</Dialog.Title>
 		</Dialog.Header>
-		<form method="POST" action="?/registerUser" use:editEnhace class="grid gap-4">
+		<form method="POST" action="?/editUser" use:editEnhace class="grid gap-4">
 			<div class="grid gap-4 grid-cols-2">
 				<Form.Field form={editUserForm} name="firstName">
 					<Form.Control>
