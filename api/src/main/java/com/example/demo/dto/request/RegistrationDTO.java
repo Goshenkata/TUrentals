@@ -18,7 +18,7 @@ public class RegistrationDTO {
     @Size(min = 3, max = 100)
     private String lastName;
     @NotNull
-    @Size(min = 10, max = 10)
+    @Size(min = 10, max = 14)
     private String phoneNumber;
     @NotNull
     @Email

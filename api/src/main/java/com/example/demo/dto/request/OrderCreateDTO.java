@@ -2,6 +2,7 @@ package com.example.demo.dto.request;
 
 import com.example.demo.validation.DeliveryBeforeReturn;
 import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,7 @@ public class OrderCreateDTO {
     private LocalDate deliveryDate;
     @Future
     private LocalDate returnDate;
+    @NotNull
     private AddressDTO address;
     private List<ItemNumberPairDTO> items;
 }
