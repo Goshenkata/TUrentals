@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.bridge.Message;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +29,7 @@ public class ItemController {
 
     @PostMapping("create")
     @Operation(summary = "Create a new item")
+    @PreAuthorize("hasAuthority('MANAGER')")
     public ResponseEntity<Long> createItem(@Valid ItemCreateDTO itemCreateDTO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().build();

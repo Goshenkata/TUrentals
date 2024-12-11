@@ -101,7 +101,6 @@ public class UserController {
         return ResponseEntity.ok(userService.getUsers(role, email));
     }
 
-    //todo change to id
     @DeleteMapping("deleteUser/{email}")
     @Operation(summary = "Delete a user by email")
     @PreAuthorize("hasAuthority('ADMIN')")

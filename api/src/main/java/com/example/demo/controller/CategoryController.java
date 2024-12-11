@@ -15,7 +15,7 @@ import java.util.List;
 public class CategoryController {
     private final CategoryService categoryService;
 
-    @PreAuthorize("hasAuthority('MANAGER')")
+    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
     @PostMapping("")
     @Operation(summary = "Add a new category, if the category already exists it does nothing")
     public ResponseEntity<?> createCategory(@RequestParam() String name) {
@@ -32,7 +32,7 @@ public class CategoryController {
 
     @GetMapping("search")
     @Operation(summary = "returns all categories or fuzzy search by name")
-    @PreAuthorize("hasAuthority('MANAGER')")
+    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
     ResponseEntity<List<String>> searchCategories(@RequestParam(required = false) String query) {
         return ResponseEntity.ok(categoryService.searchCategories(query));
     }
