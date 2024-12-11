@@ -21,5 +21,8 @@ public class CheckoutRequestDTO {
 
     @NotNull
     private Set<OrderLineDTO> orderItems;
+
+    @NotNull
+    private Long orderId;
 }
 

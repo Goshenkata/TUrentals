@@ -1,6 +1,8 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.request.CheckoutRequestDTO;
+import com.example.demo.model.OrderEntity;
+import com.example.demo.repository.OrderRepository;
 import com.example.demo.service.StripeService;
 import com.stripe.model.Event;
 import com.stripe.model.PaymentIntent;
@@ -9,6 +11,9 @@ import com.stripe.net.Webhook;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Locale;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/stripe")
@@ -37,7 +42,8 @@ public class StripeController {
             String sessionUrl = stripeService.createCheckoutSession(
                     checkoutRequest.getOrderItems(),
                     checkoutRequest.getSuccessUrl(),
-                    checkoutRequest.getCancelUrl()
+                    checkoutRequest.getCancelUrl(),
+                    checkoutRequest.getOrderId()
             );
 
             return ResponseEntity.ok(sessionUrl);
@@ -47,7 +53,6 @@ public class StripeController {
         }
     }
 
-// these don't seem to work
     @PostMapping("/webhooks")
     public ResponseEntity<Void> handleStripeEvent(@RequestBody String payload,
                                                   @RequestHeader("Stripe-Signature") String sigHeader) {
@@ -65,7 +70,7 @@ public class StripeController {
         // Process the event
         switch (event.getType()) {
             case "checkout.session.completed":
-                handleCheckoutSessionCompleted(event);
+                stripeService.handleCheckoutSessionCompleted(event);
                 break;
             case "payment_intent.succeeded":
                 handlePaymentIntentSucceeded(event);
@@ -78,25 +83,6 @@ public class StripeController {
         }
 
         return ResponseEntity.ok().build();
-    }
-
-
-    private void handleCheckoutSessionCompleted(Event event) {
-        // Parse the event to a Session object
-        Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
-        if (session == null) {
-            System.out.println("PaymentIntent data missing in the event.");
-            return;
-        }
-
-        // Extract relevant details from the session
-        String sessionId = session.getId();
-        String customerEmail = session.getCustomerDetails().getEmail();
-
-        System.out.println("Checkout Session completed for session ID: " + sessionId + " and customer email: " + customerEmail);
-
-        // Process order completion (e.g., mark order as paid, send confirmation email)
-        // Add your business logic here
     }
 
     private void handlePaymentIntentSucceeded(Event event) {

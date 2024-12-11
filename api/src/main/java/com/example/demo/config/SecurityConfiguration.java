@@ -29,7 +29,8 @@ public class SecurityConfiguration {
                 "/swagger-resources/**",
                 "/swagger-ui/**",
                 "user/register",
-                "user/login"
+                "user/login",
+                "/stripe/webhooks"
         ).permitAll()
                         .anyRequest().authenticated()
         );
