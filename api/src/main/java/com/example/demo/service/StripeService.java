@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.dto.request.OrderLineDTO;
 import com.example.demo.model.ItemEntity;
 import com.example.demo.model.availability.OrderLineEntity;
+import com.example.demo.repository.ItemRepository;
 import com.stripe.Stripe;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
@@ -17,10 +18,12 @@ import java.util.Set;
 @Service
 public class StripeService {
     private final ModelMapper mapper;
+    private final ItemRepository itemRepository;
 
-    public StripeService(@Value("${stripe.api.key}") String apiKey, ModelMapper mapper) {
+    public StripeService(@Value("${stripe.api.key}") String apiKey, ModelMapper mapper, ItemRepository itemRepository) {
         this.mapper = mapper;
         Stripe.apiKey = apiKey; // Initialize Stripe API key
+        this.itemRepository = itemRepository;
     }
 
     public String createCheckoutSession(Set<OrderLineDTO> orderLines, String successUrl, String cancelUrl) throws Exception {
@@ -34,8 +37,14 @@ public class StripeService {
         for (OrderLineDTO orderLineDTO : orderLines) {
             OrderLineEntity orderLine = mapper.map(orderLineDTO, OrderLineEntity.class);
             ItemEntity item = orderLine.getItem();
-            if (item == null) {
+            if (item == null || item.getId() == null) {
                 throw new IllegalArgumentException("Item not found. orderItem id: " + orderLine.getId());
+            }
+
+            item = itemRepository.findById(item.getId()).orElseThrow(() -> new IllegalArgumentException("Item not found."));
+
+            if (item.getPricePerDay() == null) {
+                throw new NullPointerException("Item has no price per day. Item id: " + item.getId());
             }
 
             long priceInStotinki = Math.round(item.getPricePerDay().multiply(BigDecimal.valueOf(100)).longValueExact()); // Convert BGN to stotinki
