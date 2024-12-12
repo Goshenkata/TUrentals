@@ -74,7 +74,7 @@
 					variant="outline"
 					size="icon"
 					class="h-7 w-7 flex-shrink-0"
-					href="/dashboard/catalog/categories"
+					href="/dashboard/catalog/products"
 				>
 					<ChevronLeft class="h-4 w-4" />
 					<span class="sr-only">Назад</span>
@@ -83,7 +83,7 @@
 			</div>
 
 			<div class="hidden items-center gap-2 md:ml-auto md:flex">
-				<Button variant="outline" size="sm" href="/dashboard/catalog/categories">Отказ</Button>
+				<Button variant="outline" size="sm" href="/dashboard/catalog/products">Отказ</Button>
 				<Form.Button disabled={$delayed} type="submit" size="sm" class="flex gap-2 items-center">
 					<FileCheck class="w-4 h-4" /> Запази
 				</Form.Button>
@@ -247,7 +247,7 @@
 			</div>
 		</div>
 		<div class="flex items-center justify-center gap-2 md:hidden">
-			<Button variant="outline" size="sm" href="/dashboard/catalog/categories">Отказ</Button>
+			<Button variant="outline" size="sm" href="/dashboard/catalog/products">Отказ</Button>
 			<Form.Button disabled={$delayed} type="submit" size="sm" class="flex gap-2 items-center">
 				<FileCheck class="w-4 h-4" /> Запази
 			</Form.Button>
