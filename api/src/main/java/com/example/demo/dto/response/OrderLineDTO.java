@@ -6,6 +6,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class OrderLineDTO {
-    private Long itemId;
+    private ItemDTO item;
     private int quantity;
 }
