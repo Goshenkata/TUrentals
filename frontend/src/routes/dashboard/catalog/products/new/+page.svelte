@@ -74,16 +74,16 @@
 					variant="outline"
 					size="icon"
 					class="h-7 w-7 flex-shrink-0"
-					href="/admin/catalog/categories"
+					href="/dashboard/catalog/categories"
 				>
 					<ChevronLeft class="h-4 w-4" />
 					<span class="sr-only">Назад</span>
 				</Button>
-				<h1 class="text-lg font-semibold md:text-2xl">Нова категория</h1>
+				<h1 class="text-lg font-semibold md:text-2xl">Нов продукт</h1>
 			</div>
 
 			<div class="hidden items-center gap-2 md:ml-auto md:flex">
-				<Button variant="outline" size="sm" href="/admin/catalog/categories">Отказ</Button>
+				<Button variant="outline" size="sm" href="/dashboard/catalog/categories">Отказ</Button>
 				<Form.Button disabled={$delayed} type="submit" size="sm" class="flex gap-2 items-center">
 					<FileCheck class="w-4 h-4" /> Запази
 				</Form.Button>
@@ -206,7 +206,7 @@
 			<div class="grid auto-rows-max items-start gap-4 lg:gap-8">
 				<Card.Root class="overflow-hidden">
 					<Card.Header>
-						<Card.Title>Изображение на категорията</Card.Title>
+						<Card.Title>Изображение на продукта</Card.Title>
 					</Card.Header>
 					<Card.Content>
 						<div class="grid gap-2 relative">
@@ -247,7 +247,7 @@
 			</div>
 		</div>
 		<div class="flex items-center justify-center gap-2 md:hidden">
-			<Button variant="outline" size="sm" href="/admin/catalog/categories">Отказ</Button>
+			<Button variant="outline" size="sm" href="/dashboard/catalog/categories">Отказ</Button>
 			<Form.Button disabled={$delayed} type="submit" size="sm" class="flex gap-2 items-center">
 				<FileCheck class="w-4 h-4" /> Запази
 			</Form.Button>

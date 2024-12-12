@@ -65,7 +65,7 @@
 	</Card.Header>
 	<Card.Content class="grid md:grid-cols-2 xl:grid-cols-5 gap-6">
 		<div class="grid gap-3">
-			<Label>Категория</Label>
+			<Label>Име</Label>
 			<Input bind:value={selectedName}></Input>
 		</div>
 		<div class="grid gap-3">
