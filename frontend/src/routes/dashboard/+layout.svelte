@@ -47,7 +47,7 @@
 					</DropdownMenu.Label>
 					<DropdownMenu.Separator />
 
-					<Button size="sm" class="w-full" href="logout">Изход</Button>
+					<Button size="sm" class="w-full" href="/logout">Изход</Button>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
 		</header>
