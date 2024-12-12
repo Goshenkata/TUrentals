@@ -59,6 +59,7 @@ public class ItemService {
         if (itemRepository.count() > 0) {
             return; // Skip initialization if data already exists
         }
+        log.info("Seeding items");
         createItem("Wooden Chair", "Elegant wooden chair for events.", BigDecimal.valueOf(10), "https://img.freepik.com/free-vector/vintage-armchair-vector-illustration-remixed-from-artwork-by-donald-harding_53876-115493.jpg?t=st=1732544311~exp=1732547911~hmac=0d80802e8aadd15bb53b6bbc3bc7e50bda56402ccf178cd7e2ffd959c4d8e679&w=740", 50, CategoryEnum.FURNITURE);
         createItem("Round Table", "Sturdy round table.", BigDecimal.valueOf(25), "https://saltwoods.com/wp-content/uploads/2024/07/littlesur-copy.jpg", 20, CategoryEnum.FURNITURE);
         createItem("Leather Sofa", "Comfortable leather sofa.", BigDecimal.valueOf(50), "https://5.imimg.com/data5/SELLER/Default/2021/12/AR/OK/DV/14537345/5-seater-leather-sofa-set-500x500.jpg", 5, CategoryEnum.FURNITURE);
