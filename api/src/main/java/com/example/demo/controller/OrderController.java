@@ -25,7 +25,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("create")
-    @Operation(summary = "Create a new order, if the items are not available it reurns the items Ids and the available quantity")
+    @Operation(summary = "Create a new order, if the items are not available it returns the item Ids and the available quantity")
     @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
     public ResponseEntity<CreateOrderResultDTO> createOrder(@Valid @RequestBody OrderCreateDTO orderCreateDTO, BindingResult bindingResult, Principal principal) {
         if (bindingResult.hasErrors()) {

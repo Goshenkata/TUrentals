@@ -39,18 +39,19 @@ public class OrderService {
     private final ItemRepository itemRepository;
     private final OrderLineRepository orderLineRepository;
     private final AssignmentRepository assignmentRepository;
+    private final StripeService stripeService;
 
 
     @Transactional
     public CreateOrderResultDTO createOrder(OrderCreateDTO orderCreateDTO, String email) {
         Optional<UserEntity> customer = userRepository.findByEmail(email);
         if (customer.isEmpty()) {
-            return new CreateOrderResultDTO(new MessageResponseDTO(404, "User not found"));
+            return new CreateOrderResultDTO(new MessageResponseDTO(404, "User not found"), "");
         }
 
         OrderEntity orderEntity = modelMapper.map(orderCreateDTO, OrderEntity.class);
         orderEntity.setDeliveryAddress(addressService.createAddress(orderCreateDTO.getAddress()));
-        orderEntity.setStatus(OrderStatus.PENDING);
+        orderEntity.setStatus(OrderStatus.AWAITINGPAYMENT);
         orderEntity.setCustomer(customer.get());
 
         BigDecimal pricePerDay = BigDecimal.ZERO;
@@ -62,7 +63,7 @@ public class OrderService {
         for (ItemNumberPairDTO itemDTO : orderCreateDTO.getItems()) {
             Optional<ItemEntity> itemEntity = itemRepository.findById(itemDTO.getItemId());
             if (itemEntity.isEmpty()) {
-                return new CreateOrderResultDTO(new MessageResponseDTO(404, "Item not found"));
+                return new CreateOrderResultDTO(new MessageResponseDTO(404, "Item not found"), "");
             }
             int availability = itemService.checkAvailabilityAtDateRange(itemDTO.getItemId(), orderCreateDTO.getDeliveryDate(), orderCreateDTO.getReturnDate());
             if (availability < itemDTO.getQuantity()) {
@@ -89,7 +90,16 @@ public class OrderService {
         orderLineRepository.saveAll(lines);
         orderRepository.save(orderEntity);
         log.info("Order " + orderEntity.getId() + " created");
-        return new CreateOrderResultDTO(new MessageResponseDTO(200, "Order " + orderEntity.getId() + " created"));
+
+        String sessionUrl;
+        try {
+            sessionUrl = stripeService.createCheckoutSession(orderEntity.getId().toString(), orderCreateDTO.getItems(), orderCreateDTO.getSuccessUrl(), orderCreateDTO.getCancelUrl());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return new CreateOrderResultDTO(new MessageResponseDTO(409, "Could not create checkout session."), "");
+        }
+
+        return new CreateOrderResultDTO(new MessageResponseDTO(200, "Order " + orderEntity.getId() + " created"), sessionUrl);
     }
 
     @Transactional
@@ -103,7 +113,9 @@ public class OrderService {
                             LocalDate.now(),
                             LocalDate.now().plusDays(1),
                             new AddressDTO("Bulgaria", "Sofia", "Sofia", "ul. Tintyava 15", "1000", "Leave items at the driveway"),
-                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 50)))
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 50)),
+                            "https://www.seedSuccessUrl.com",
+                            "https://www.seedCancelurl")
                     , email
             );
             //should be available
@@ -112,7 +124,9 @@ public class OrderService {
                             LocalDate.now().plusDays(1),
                             LocalDate.now().plusDays(3),
                             new AddressDTO("Bulgaria", "Sofia", "Sofia", "ul. Georgi Raychev 15", "1000", "Leave items at the driveway"),
-                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)),
+                            "https://www.seedSuccessUrl.com",
+                            "https://www.seedCancelurl")
                     , email
             );
             //should fail
@@ -121,7 +135,9 @@ public class OrderService {
                             LocalDate.now(),
                             LocalDate.now().plusDays(2),
                             new AddressDTO("Bulgaria", "Pleven", "Pleven", "ul. Ivan Kirkov 17", "5800", "Leave items at the driveway"),
-                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 50)))
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 50)),
+                            "https://www.seedSuccessUrl.com",
+                            "https://www.seedCancelurl")
                     , email
             );
             //should work
@@ -130,7 +146,9 @@ public class OrderService {
                             LocalDate.now().plusDays(1),
                             LocalDate.now().plusDays(4),
                             new AddressDTO("Bulgaria", "Varna", "Varna", "boul. Mariya Louiza 1", "9000", "Leave items at the driveway"),
-                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 40)))
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 40)),
+                            "https://www.seedSuccessUrl.com",
+                            "https://www.seedCancelurl")
                     , email
             );
             //should fail
@@ -139,7 +157,9 @@ public class OrderService {
                             LocalDate.now().plusDays(3),
                             LocalDate.now().plusDays(5),
                             new AddressDTO("Bulgaria", "Varna", "Varna", "boul. Primorski 3", "9000", "Leave items at the driveway"),
-                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 40)))
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 40)),
+                            "https://www.seedSuccessUrl.com",
+                            "https://www.seedCancelurl")
                     , email
             );
             createOrder(
@@ -147,7 +167,9 @@ public class OrderService {
                             LocalDate.now().plusDays(3),
                             LocalDate.now().plusDays(5),
                             new AddressDTO("Bulgaria", "Kyustendil", "Dupnitsa", "ul. Ivan Stranski 15", "2600", "Leave items at the driveway"),
-                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)),
+                            "https://www.seedSuccessUrl.com",
+                            "https://www.seedCancelurl")
                     , email
             );
 //            createOrder(
@@ -155,7 +177,9 @@ public class OrderService {
 //                            LocalDate.now(),
 //                            LocalDate.now().plusDays(5),
 //                            new AddressDTO("Bulgaria", "Kyustendil", "Kyustendil", "ul. Roden krai 10", "2500", "Leave items at the driveway"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)),
+//                            "https://www.seedSuccessUrl.com",
+//                            "https://www.seedCancelurl")
 //                    , email
 //            );
 //            createOrder(
@@ -163,7 +187,9 @@ public class OrderService {
 //                            LocalDate.now(),
 //                            LocalDate.now().plusDays(5),
 //                            new AddressDTO("Bulgaria", "Sofia", "Sofia", "boul. St.Klimet Ohridski 16", "1000", "Leave items at the driveway"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)),
+//                            "https://www.seedSuccessUrl.com",
+//                            "https://www.seedCancelurl")
 //                    , email
 //            );
 //            createOrder(
@@ -171,7 +197,9 @@ public class OrderService {
 //                            LocalDate.now(),
 //                            LocalDate.now().plusDays(5),
 //                            new AddressDTO("Bulgaria", "Sofia", "Sofia", "ul. Vitosha 15", "1000", "Leave at the main entrance"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)),
+//                            "https://www.seedSuccessUrl.com",
+//                            "https://www.seedCancelurl")
 //                    , email
 //            );
 //            createOrder(
@@ -179,7 +207,9 @@ public class OrderService {
 //                            LocalDate.now(),
 //                            LocalDate.now().plusDays(5),
 //                            new AddressDTO("Bulgaria", "Plovdiv", "Plovdiv City", "ul. Kapitan Raycho 10", "4000", "Leave at the back door"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)),
+//                            "https://www.seedSuccessUrl.com",
+//                            "https://www.seedCancelurl")
 //                    , email
 //            );
 //            createOrder(
@@ -187,7 +217,9 @@ public class OrderService {
 //                            LocalDate.now(),
 //                            LocalDate.now().plusDays(5),
 //                            new AddressDTO("Bulgaria", "Varna", "Varna City", "ul. Kniaz Boris 20", "9000", "Deliver to reception"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)),
+//                            "https://www.seedSuccessUrl.com",
+//                            "https://www.seedCancelurl")
 //                    , email
 //            );
 //            createOrder(
@@ -195,7 +227,9 @@ public class OrderService {
 //                            LocalDate.now(),
 //                            LocalDate.now().plusDays(5),
 //                            new AddressDTO("Bulgaria", "Ruse", "Ruse City", "ul. Petko Slaveykov 5", "7000", "Leave at the parking lot"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)),
+//                            "https://www.seedSuccessUrl.com",
+//                            "https://www.seedCancelurl")
 //                    , email
 //            );
 //            createOrder(
@@ -203,7 +237,9 @@ public class OrderService {
 //                            LocalDate.now(),
 //                            LocalDate.now().plusDays(5),
 //                            new AddressDTO("Bulgaria", "Stara Zagora", "Stara Zagora City", "ul. Todor Kableshkov 12", "6000", "Drop off at the side gate"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)),
+//                            "https://www.seedSuccessUrl.com",
+//                            "https://www.seedCancelurl")
 //                    , email
 //            );
 //            createOrder(
@@ -211,7 +247,9 @@ public class OrderService {
 //                            LocalDate.now(),
 //                            LocalDate.now().plusDays(5),
 //                            new AddressDTO("Bulgaria", "Veliko Tarnovo", "Veliko Tarnovo City", "ul. Ivaylo 30", "5000", "Deliver to the front porch"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)),
+//                            "https://www.seedSuccessUrl.com",
+//                            "https://www.seedCancelurl")
 //                    , email
 //            );
 //            createOrder(
@@ -219,7 +257,9 @@ public class OrderService {
 //                            LocalDate.now(),
 //                            LocalDate.now().plusDays(5),
 //                            new AddressDTO("Bulgaria", "Blagoevgrad", "Blagoevgrad City", "ul. Georgi Izmirliev 22", "2700", "Hand over at the security desk"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)),
+//                            "https://www.seedSuccessUrl.com",
+//                            "https://www.seedCancelurl")
 //                    , email
 //            );
 //            createOrder(
@@ -227,7 +267,9 @@ public class OrderService {
 //                            LocalDate.now(),
 //                            LocalDate.now().plusDays(5),
 //                            new AddressDTO("Bulgaria", "Shumen", "Shumen City", "ul. Dobri Voynikov 35", "9700", "Drop off near the stairs"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)),
+//                            "https://www.seedSuccessUrl.com",
+//                            "https://www.seedCancelurl")
 //                    , email
 //            );
 //            createOrder(
@@ -235,7 +277,9 @@ public class OrderService {
 //                            LocalDate.now(),
 //                            LocalDate.now().plusDays(5),
 //                            new AddressDTO("Bulgaria", "Burgas", "Burgas City", "ul. Alexander Battenberg 25", "8000", "Hand over to the concierge"),
-//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)))
+//                            List.of(new ItemNumberPairDTO(itemEntity.getId(), 10)),
+//                            "https://www.seedSuccessUrl.com",
+//                            "https://www.seedCancelurl")
 //                    , email
 //            );
         }

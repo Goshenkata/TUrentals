@@ -1,19 +1,14 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.request.CheckoutRequestDTO;
-import com.example.demo.model.OrderEntity;
-import com.example.demo.repository.OrderRepository;
+import com.example.demo.dto.common.MessageResponseDTO;
 import com.example.demo.service.StripeService;
 import com.stripe.model.Event;
 import com.stripe.model.PaymentIntent;
-import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
+import org.aspectj.bridge.Message;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Locale;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/stripe")
@@ -25,38 +20,10 @@ public class StripeController {
         this.stripeService = stripeService;
     }
 
-    @PostMapping("/create-checkout-session")
-    public ResponseEntity<String> createCheckoutSession(
-            @RequestBody CheckoutRequestDTO checkoutRequest
-    ) {
-        try {
-            // Validate request data
-            if (checkoutRequest.getOrderItems() == null || checkoutRequest.getOrderItems().isEmpty()) {
-                return ResponseEntity.badRequest().body("Order items cannot be empty.");
-            }
-            if (checkoutRequest.getSuccessUrl() == null || checkoutRequest.getCancelUrl() == null) {
-                return ResponseEntity.badRequest().body("Success URL and Cancel URL are required.");
-            }
-
-            // Generate the Stripe checkout session URL
-            String sessionUrl = stripeService.createCheckoutSession(
-                    checkoutRequest.getOrderItems(),
-                    checkoutRequest.getSuccessUrl(),
-                    checkoutRequest.getCancelUrl(),
-                    checkoutRequest.getOrderId()
-            );
-
-            return ResponseEntity.ok(sessionUrl);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating checkout session.");
-        }
-    }
-
     @PostMapping("/webhooks")
-    public ResponseEntity<Void> handleStripeEvent(@RequestBody String payload,
-                                                  @RequestHeader("Stripe-Signature") String sigHeader) {
-        System.out.println("test hit");
+    public ResponseEntity<MessageResponseDTO> handleStripeEvent(@RequestBody String payload,
+                                                                @RequestHeader("Stripe-Signature") String sigHeader) {
+        MessageResponseDTO messageResponseDTO;
 
         Event event;
         try {
@@ -70,45 +37,47 @@ public class StripeController {
         // Process the event
         switch (event.getType()) {
             case "checkout.session.completed":
-                stripeService.handleCheckoutSessionCompleted(event);
+                messageResponseDTO = stripeService.handleCheckoutSessionCompleted(event);
                 break;
             case "payment_intent.succeeded":
-                handlePaymentIntentSucceeded(event);
+                messageResponseDTO = handlePaymentIntentSucceeded(event);
                 break;
             case "payment_intent.payment_failed":
-                handlePaymentIntentFailed(event);
+                messageResponseDTO = handlePaymentIntentFailed(event);
                 break;
             default:
-                System.out.println("Unhandled event type: " + event.getType());
+                return ResponseEntity.status(404).body(new MessageResponseDTO(404, "Unexpected event"));
         }
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(messageResponseDTO.status()).body(messageResponseDTO);
     }
 
-    private void handlePaymentIntentSucceeded(Event event) {
+    // todo implement
+    private MessageResponseDTO handlePaymentIntentSucceeded(Event event) {
         // Parse the event to a PaymentIntent object
         PaymentIntent paymentIntent = (PaymentIntent) event.getDataObjectDeserializer().getObject().orElse(null);
         if (paymentIntent == null) {
             System.out.println("PaymentIntent data missing in the event.");
-            return;
+            return null;
         }
 
         System.out.println("Payment succeeded for PaymentIntent ID: " + paymentIntent.getId());
-
+        return null;
         // Process the successful payment (e.g., update database, notify customer)
         // Add your business logic here
     }
 
-    private void handlePaymentIntentFailed(Event event) {
+    // todo implement
+    private MessageResponseDTO handlePaymentIntentFailed(Event event) {
         // Parse the event to a PaymentIntent object
         PaymentIntent paymentIntent = (PaymentIntent) event.getDataObjectDeserializer().getObject().orElse(null);
         if (paymentIntent == null) {
             System.out.println("PaymentIntent data missing in the event.");
-            return;
+            return null;
         }
 
         System.out.println("Payment failed for PaymentIntent ID: " + paymentIntent.getId());
-
+        return null;
         // Handle the failed payment (e.g., notify customer, retry payment)
         // Add your business logic here
     }

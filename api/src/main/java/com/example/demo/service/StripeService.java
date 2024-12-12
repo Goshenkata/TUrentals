@@ -1,65 +1,68 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.common.MessageResponseDTO;
+import com.example.demo.dto.request.ItemNumberPairDTO;
 import com.example.demo.dto.request.OrderLineDTO;
+import com.example.demo.dto.response.CreateOrderResultDTO;
 import com.example.demo.model.ItemEntity;
 import com.example.demo.model.OrderEntity;
-import com.example.demo.model.OrderStatus;
+import com.example.demo.dto.enums.OrderStatus;
 import com.example.demo.model.availability.OrderLineEntity;
 import com.example.demo.repository.ItemRepository;
+import com.example.demo.repository.OrderLineRepository;
 import com.example.demo.repository.OrderRepository;
 import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
+import com.stripe.model.LineItem;
+import com.stripe.model.LineItemCollection;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.aspectj.bridge.Message;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Map;
-import java.util.Set;
+import java.time.LocalDate;
+import java.util.*;
 
 @Service
+@Slf4j
 public class StripeService {
     private final ModelMapper mapper;
     private final ItemRepository itemRepository;
     private final OrderRepository orderRepository;
+    private final OrderLineRepository orderLineRepository;
 
-    public StripeService(@Value("${stripe.api.key}") String apiKey, ModelMapper mapper, ItemRepository itemRepository, OrderRepository orderRepository) {
+    public StripeService(@Value("${stripe.api.key}") String apiKey, ModelMapper mapper, ItemRepository itemRepository, OrderRepository orderRepository, OrderLineRepository orderLineRepository) {
         this.mapper = mapper;
         Stripe.apiKey = apiKey; // Initialize Stripe API key
         this.itemRepository = itemRepository;
         this.orderRepository = orderRepository;
+        this.orderLineRepository = orderLineRepository;
     }
 
-    public String createCheckoutSession(Set<OrderLineDTO> orderLines, String successUrl, String cancelUrl, Long orderId) throws Exception {
+    public String createCheckoutSession(String orderId, List<ItemNumberPairDTO> orderLines, String successUrl, String cancelUrl) throws Exception {
         // Start building the session params
         SessionCreateParams.Builder sessionBuilder = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setSuccessUrl(successUrl)
-                .setCancelUrl(cancelUrl);
+                .setCancelUrl(cancelUrl)
+                .putMetadata("orderId", orderId);
 
-        if (orderRepository.findById(orderId).isPresent())
-            sessionBuilder.putMetadata("orderId", ("" + orderId));
-        else
-            throw new IllegalArgumentException("Order not found. order id: " + orderId);
-
-        // Add line items dynamically based on the orderItems set
-        for (OrderLineDTO orderLineDTO : orderLines) {
-            OrderLineEntity orderLine = mapper.map(orderLineDTO, OrderLineEntity.class);
-            ItemEntity item = orderLine.getItem();
-            if (item == null || item.getId() == null) {
-                throw new IllegalArgumentException("Item not found. orderItem id: " + orderLine.getId());
-            }
-
-            item = itemRepository.findById(item.getId()).orElseThrow(() -> new IllegalArgumentException("Item not found."));
+        for (ItemNumberPairDTO orderLine : orderLines) {
+            ItemEntity item = itemRepository.findById(orderLine.getItemId()).orElseThrow(() -> new IllegalArgumentException("Item not found."));
 
             if (item.getPricePerDay() == null) {
                 throw new NullPointerException("Item has no price per day. Item id: " + item.getId());
             }
 
-            long priceInStotinki = Math.round(item.getPricePerDay().multiply(BigDecimal.valueOf(100)).longValueExact()); // Convert BGN to stotinki
+            long priceInStotinki = Math.round(item.getPricePerDay().multiply(BigDecimal.valueOf(100)).longValueExact()); // Convert BGN leva to stotinki
 
             // Add the item to the session
             sessionBuilder.addLineItem(
@@ -71,7 +74,6 @@ public class StripeService {
                                             .setProductData(
                                                     SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                                             .setName(item.getName())
-                                                            .putMetadata("itemId", item.getId().toString())
                                                             .build()
                                             )
                                             .setUnitAmount(priceInStotinki)
@@ -87,44 +89,42 @@ public class StripeService {
         return session.getUrl(); // Return the session URL for redirection
     }
 
-    public void handleCheckoutSessionCompleted(Event event) {
+    public MessageResponseDTO handleCheckoutSessionCompleted(Event event) {
+        // todo return logic to change status only
+
         // Parse the event to a Session object
         Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
         if (session == null) {
-            System.out.println("PaymentIntent data missing in the event.");
-            return;
+            log.error("Unable to process event: session data was null.");
+            return new MessageResponseDTO(404, "Unable to process event: session data was null.");
         }
 
         // Extract relevant details from the session
         String sessionId = session.getId();
-        String customerEmail = session.getCustomerDetails().getEmail();
 
-        System.out.println("Checkout Session completed for session ID: " + sessionId + " and customer email: " + customerEmail);
+        System.out.println("Checkout Session completed for session ID: " + sessionId);
 
         Map<String, String> metadata = session.getMetadata();
 
         String orderIdStr = metadata.get("orderId");
         Long orderId;
-        try {
+        try{
             orderId = Long.parseLong(orderIdStr);
         } catch (NumberFormatException e) {
-            System.err.println("Failed to parse orderId: " + orderIdStr);
-            return;
+            log.error("Failed to parse orderId: " + orderIdStr);
+            return new MessageResponseDTO(409, "Failed to parse orderId: " + orderIdStr);
         }
 
-        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found for ID: " + orderId));
-
-        if (orderEntity.getStatus() == OrderStatus.IN_PROGRESS) {
-            System.out.println("Order already marked as in progress.");
-            return;
+        Optional<OrderEntity> optionalOrderEntity = orderRepository.findById(orderId);
+        if (optionalOrderEntity.isEmpty()) {
+            log.error("Order not found. Order ID: " + orderId);
+            return new MessageResponseDTO(404, "Order not found. Order ID: " + orderId);
         }
 
-        orderEntity.setStatus(OrderStatus.IN_PROGRESS);
+        OrderEntity orderEntity = optionalOrderEntity.get();
+        orderEntity.setStatus(OrderStatus.PENDING);
         orderRepository.save(orderEntity);
 
-        System.out.println("Order ID: " + orderId + " status updated to: " + orderEntity.getStatus());
-        // Process order completion (e.g., mark order as paid)
-        // Add your business logic here
+        return new MessageResponseDTO(200, "OK.");
     }
-
 }

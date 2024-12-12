@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.URL;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,4 +23,10 @@ public class OrderCreateDTO {
     @NotNull
     private AddressDTO address;
     private List<ItemNumberPairDTO> items;
+    @NotNull
+    @URL
+    private String successUrl;
+    @NotNull
+    @URL
+    private String cancelUrl;
 }

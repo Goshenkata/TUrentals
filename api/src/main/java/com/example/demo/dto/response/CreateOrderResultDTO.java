@@ -12,10 +12,12 @@ import java.util.List;
 public class CreateOrderResultDTO {
     List<OrderLineDTO> itemsThatCannotBeOrdered;
     MessageResponseDTO result;
+    String stripeSessionUrl;
 
-    public CreateOrderResultDTO(MessageResponseDTO result) {
+    public CreateOrderResultDTO(MessageResponseDTO result, String stripeSessionUrl) {
         this.result = result;
         itemsThatCannotBeOrdered = new ArrayList<>();
+        this.stripeSessionUrl = stripeSessionUrl;
     }
 
     public CreateOrderResultDTO(MessageResponseDTO itemsNotAvailable, List<OrderLineDTO> invalidItems) {
