@@ -16,16 +16,16 @@
 	import { page } from '$app/stores';
 	import { Badge } from './ui/badge';
 	import Skeleton from './ui/skeleton/skeleton.svelte';
-	import type { Role } from '$lib/enums';
+	import type { User } from '$lib/types';
 
 	type SidebarPropsWithRole = Omit<ComponentProps<typeof Sidebar.Root>, 'userRole'> & {
-		userRole: Role;
+		user: User;
 	};
 
 	let {
 		ref = $bindable(null),
 		collapsible = 'icon',
-		userRole,
+		user,
 		...restProps
 	}: SidebarPropsWithRole = $props();
 </script>
@@ -78,7 +78,7 @@
 					</Sidebar.MenuBadge>
 				</Sidebar.MenuItem>
 
-				{#if userRole === 'MANAGER'}
+				{#if user?.role === 'MANAGER'}
 					<Collapsible.Root
 						open={$page.url.pathname.includes('/catalog')}
 						class="group/collapsible"
@@ -146,7 +146,7 @@
 					</Collapsible.Root>
 				{/if}
 
-				{#if userRole === 'ADMIN'}
+				{#if user?.role === 'ADMIN'}
 					<Sidebar.MenuItem>
 						<Sidebar.MenuButton isActive={$page.url.pathname.includes('/dashboard/users')}>
 							{#snippet child({ props })}

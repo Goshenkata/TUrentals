@@ -29,13 +29,15 @@
 		</Table.Cell>
 
 		<Table.Cell class="">
-			<img
-				class="rounded-sm"
-				width="40px"
-				height="40px"
-				src={product.imageUrl ?? 'https://placehold.co/40'}
-				alt=""
-			/>
+			<div class="w-[40px] h-[40px] overflow-hidden rounded-sm">
+				<img
+					class="object-contain"
+					width="40px"
+					height="40px"
+					src={product.imageUrl ?? 'https://placehold.co/40'}
+					alt=""
+				/>
+			</div>
 		</Table.Cell>
 
 		<Table.Cell class="">

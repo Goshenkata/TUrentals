@@ -1,7 +1,5 @@
-import { error, type Actions } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { fail, superValidate } from 'sveltekit-superforms';
-import { zod } from 'sveltekit-superforms/adapters';
 import { generateUrlParams } from '$lib/utils';
 import type { Category, ReturnedProduct } from '$lib/types';
 

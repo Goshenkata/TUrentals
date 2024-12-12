@@ -27,7 +27,6 @@ type ReturnedProduct = {
 	id: number;
 	name: string;
 	categoryName: string;
-	quantity: number;
 	pricePerDay: number;
 	imageUrl: string;
 };
