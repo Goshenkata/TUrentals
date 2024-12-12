@@ -16,12 +16,18 @@
 	import { page } from '$app/stores';
 	import { Badge } from './ui/badge';
 	import Skeleton from './ui/skeleton/skeleton.svelte';
+	import type { Role } from '$lib/enums';
+
+	type SidebarPropsWithRole = Omit<ComponentProps<typeof Sidebar.Root>, 'userRole'> & {
+		userRole: Role;
+	};
 
 	let {
 		ref = $bindable(null),
 		collapsible = 'icon',
+		userRole,
 		...restProps
-	}: ComponentProps<typeof Sidebar.Root> = $props();
+	}: SidebarPropsWithRole = $props();
 </script>
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
@@ -72,79 +78,86 @@
 					</Sidebar.MenuBadge>
 				</Sidebar.MenuItem>
 
-				<Collapsible.Root open={$page.url.pathname.includes('/catalog')} class="group/collapsible">
-					{#snippet child({ props })}
-						<Sidebar.MenuItem {...props}>
-							<Collapsible.Trigger>
-								{#snippet child({ props })}
-									<Sidebar.MenuButton {...props}>
-										{#snippet tooltipContent()}
-											Каталог
-										{/snippet}
-										<BookOpen />
-										<span>Каталог</span>
-										<ChevronRight
-											class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
-										/>
-									</Sidebar.MenuButton>
-								{/snippet}
-							</Collapsible.Trigger>
-							<Collapsible.Content>
-								<Sidebar.MenuSub>
-									<Sidebar.MenuSubItem>
-										<Sidebar.MenuSubButton
-											isActive={$page.url.pathname === '/dashboard/catalog/categories'}
-										>
-											{#snippet child({ props })}
-												<a href="/dashboard/catalog/categories" {...props}>
-													<Boxes />
-													<span>Категории</span>
-												</a>
-											{/snippet}
-										</Sidebar.MenuSubButton>
-									</Sidebar.MenuSubItem>
-
-									<Sidebar.MenuSubItem>
-										<Sidebar.MenuSubButton
-											isActive={$page.url.pathname === '/dashboard/catalog/products'}
-										>
-											{#snippet child({ props })}
-												<a href="/dashboard/catalog/products" {...props}>
-													<Package />
-													<span>Продукти</span>
-												</a>
-											{/snippet}
-										</Sidebar.MenuSubButton>
-									</Sidebar.MenuSubItem>
-
-									<Sidebar.MenuSubItem>
-										<Sidebar.MenuSubButton
-											isActive={$page.url.pathname === '/dashboard/catalog/products/new'}
-										>
-											{#snippet child({ props })}
-												<a href="/dashboard/catalog/products/new" {...props}>
-													<PackagePlus />
-													<span>Добавяне на продукт</span>
-												</a>
-											{/snippet}
-										</Sidebar.MenuSubButton>
-									</Sidebar.MenuSubItem>
-								</Sidebar.MenuSub>
-							</Collapsible.Content>
-						</Sidebar.MenuItem>
-					{/snippet}
-				</Collapsible.Root>
-
-				<Sidebar.MenuItem>
-					<Sidebar.MenuButton isActive={$page.url.pathname.includes('/dashboard/users')}>
+				{#if userRole === 'MANAGER'}
+					<Collapsible.Root
+						open={$page.url.pathname.includes('/catalog')}
+						class="group/collapsible"
+					>
 						{#snippet child({ props })}
-							<a href="/dashboard/users" {...props}>
-								<Users />
-								<span>Потребители</span>
-							</a>
+							<Sidebar.MenuItem {...props}>
+								<Collapsible.Trigger>
+									{#snippet child({ props })}
+										<Sidebar.MenuButton {...props}>
+											{#snippet tooltipContent()}
+												Каталог
+											{/snippet}
+											<BookOpen />
+											<span>Каталог</span>
+											<ChevronRight
+												class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+											/>
+										</Sidebar.MenuButton>
+									{/snippet}
+								</Collapsible.Trigger>
+								<Collapsible.Content>
+									<Sidebar.MenuSub>
+										<Sidebar.MenuSubItem>
+											<Sidebar.MenuSubButton
+												isActive={$page.url.pathname === '/dashboard/catalog/categories'}
+											>
+												{#snippet child({ props })}
+													<a href="/dashboard/catalog/categories" {...props}>
+														<Boxes />
+														<span>Категории</span>
+													</a>
+												{/snippet}
+											</Sidebar.MenuSubButton>
+										</Sidebar.MenuSubItem>
+
+										<Sidebar.MenuSubItem>
+											<Sidebar.MenuSubButton
+												isActive={$page.url.pathname === '/dashboard/catalog/products'}
+											>
+												{#snippet child({ props })}
+													<a href="/dashboard/catalog/products" {...props}>
+														<Package />
+														<span>Продукти</span>
+													</a>
+												{/snippet}
+											</Sidebar.MenuSubButton>
+										</Sidebar.MenuSubItem>
+
+										<Sidebar.MenuSubItem>
+											<Sidebar.MenuSubButton
+												isActive={$page.url.pathname === '/dashboard/catalog/products/new'}
+											>
+												{#snippet child({ props })}
+													<a href="/dashboard/catalog/products/new" {...props}>
+														<PackagePlus />
+														<span>Добавяне на продукт</span>
+													</a>
+												{/snippet}
+											</Sidebar.MenuSubButton>
+										</Sidebar.MenuSubItem>
+									</Sidebar.MenuSub>
+								</Collapsible.Content>
+							</Sidebar.MenuItem>
 						{/snippet}
-					</Sidebar.MenuButton>
-				</Sidebar.MenuItem>
+					</Collapsible.Root>
+				{/if}
+
+				{#if userRole === 'ADMIN'}
+					<Sidebar.MenuItem>
+						<Sidebar.MenuButton isActive={$page.url.pathname.includes('/dashboard/users')}>
+							{#snippet child({ props })}
+								<a href="/dashboard/users" {...props}>
+									<Users />
+									<span>Потребители</span>
+								</a>
+							{/snippet}
+						</Sidebar.MenuButton>
+					</Sidebar.MenuItem>
+				{/if}
 			</Sidebar.Menu>
 		</Sidebar.Group>
 	</Sidebar.Content>

@@ -17,3 +17,17 @@ type LoginInfo = null | {
 };
 
 type NonNullableUser = NonNullable<Exclude<User, null | undefined>>;
+
+type Category = {
+	id: number;
+	name: string;
+};
+
+type ReturnedProduct = {
+	id: number;
+	name: string;
+	categoryName: string;
+	quantity: number;
+	pricePerDay: number;
+	imageUrl: string;
+};

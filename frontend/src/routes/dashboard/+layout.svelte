@@ -7,11 +7,11 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import DashboardSidebar from '$lib/components/dashboard-sidebar.svelte';
 
-	const { children } = $props();
+	const { children, data } = $props();
 </script>
 
 <Sidebar.Provider>
-	<DashboardSidebar />
+	<DashboardSidebar userRole={data.user.role} />
 	<Sidebar.Inset class="relative">
 		<header class="flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
 			<Sidebar.Trigger class="-ml-1" />
