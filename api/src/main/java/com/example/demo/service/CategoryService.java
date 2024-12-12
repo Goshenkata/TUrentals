@@ -13,10 +13,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +21,7 @@ import java.util.stream.Collectors;
 public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final ItemRepository itemRepository;
+    private final ModelMapper modelMapper;
 
     public void seedCategories() {
         if (categoryRepository.count() == 0) {
@@ -57,17 +55,18 @@ public class CategoryService {
         return new MessageResponseDTO(200, "Category deleted");
     }
 
-    public List<String> searchCategories(String query) {
-        List<String> categies = categoryRepository.findAll()
+    public List<CategoryDTO> searchCategories(String query) {
+        List<CategoryDTO> categies = categoryRepository.findAll()
                 .stream()
-                .map(CategoryEntity::getName)
+                .map(categoryEntity -> modelMapper.map(categoryEntity, CategoryDTO.class))
                 .toList();
         if (query != null) {
-            return FuzzySearch.extractSorted(query, categies)
-                    .stream()
-                    .map(ExtractedResult::getString)
-                    .limit(5)
-                    .toList();
+            List<CategoryDTO> sorted = new ArrayList<>();
+            FuzzySearch.extractSorted(query, categies.stream().map(CategoryDTO::getName).toList(), 80)
+                    .forEach(extractedResult -> {
+                        sorted.add(categies.get(extractedResult.getIndex()));
+                    });
+            return sorted;
         }
         return categies;
     }
