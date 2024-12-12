@@ -14,6 +14,7 @@ public class ItemDTO {
     BigDecimal pricePerDay;
     String imageUrl;
     String categoryName;
+    String description;
 
     public static int compare(ItemDTO o1, ItemDTO o2, SortBy sortBy) {
         if (sortBy == SortBy.NAME_ASC || sortBy == SortBy.NAME_DESC) {
