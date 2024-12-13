@@ -16,6 +16,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.model.LineItem;
 import com.stripe.model.LineItemCollection;
+import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import com.stripe.param.checkout.SessionCreateParams;
 import lombok.NonNull;
@@ -53,7 +54,12 @@ public class StripeService {
                 .setMode(SessionCreateParams.Mode.PAYMENT)
                 .setSuccessUrl(successUrl)
                 .setCancelUrl(cancelUrl)
-                .putMetadata("orderId", orderId);
+                .putMetadata("orderId", orderId)
+                .setPaymentIntentData(
+                        SessionCreateParams.PaymentIntentData.builder()
+                            .putMetadata("orderId", orderId)
+                            .build()
+                );
 
         for (ItemNumberPairDTO orderLine : orderLines) {
             ItemEntity item = itemRepository.findById(orderLine.getItemId()).orElseThrow(() -> new IllegalArgumentException("Item not found."));
@@ -90,8 +96,6 @@ public class StripeService {
     }
 
     public MessageResponseDTO handleCheckoutSessionCompleted(Event event) {
-        // todo return logic to change status only
-
         // Parse the event to a Session object
         Session session = (Session) event.getDataObjectDeserializer().getObject().orElse(null);
         if (session == null) {
@@ -99,14 +103,7 @@ public class StripeService {
             return new MessageResponseDTO(404, "Unable to process event: session data was null.");
         }
 
-        // Extract relevant details from the session
-        String sessionId = session.getId();
-
-        System.out.println("Checkout Session completed for session ID: " + sessionId);
-
-        Map<String, String> metadata = session.getMetadata();
-
-        String orderIdStr = metadata.get("orderId");
+        String orderIdStr = session.getMetadata().get("orderId");
         Long orderId;
         try{
             orderId = Long.parseLong(orderIdStr);
@@ -125,6 +122,38 @@ public class StripeService {
         orderEntity.setStatus(OrderStatus.PENDING);
         orderRepository.save(orderEntity);
 
-        return new MessageResponseDTO(200, "OK.");
+        log.info("Successfully changed order status to PENDING.");
+        return new MessageResponseDTO(200, "Successfully changed order status to PENDING.");
+    }
+
+    public MessageResponseDTO handlePaymentIntentFailed(Event event) {
+        // Parse the event to a PaymentIntent object
+        PaymentIntent paymentIntent = (PaymentIntent) event.getDataObjectDeserializer().getObject().orElse(null);
+        if (paymentIntent == null) {
+            log.error("PaymentIntent data missing in the event.");
+            return new MessageResponseDTO(404, "PaymentIntent data missing in the event.");
+        }
+
+        String orderIdStr = paymentIntent.getMetadata().get("orderId");
+        Long orderId;
+        try{
+            orderId = Long.parseLong(orderIdStr);
+        } catch (NumberFormatException e) {
+            log.error("Failed to parse orderId: " + orderIdStr);
+            return new MessageResponseDTO(409, "Failed to parse orderId: " + orderIdStr);
+        }
+
+        Optional<OrderEntity> optionalOrderEntity = orderRepository.findById(orderId);
+        if (optionalOrderEntity.isEmpty()) {
+            log.error("Order not found. Order ID: " + orderId);
+            return new MessageResponseDTO(404, "Order not found. Order ID: " + orderId);
+        }
+
+        OrderEntity orderEntity = optionalOrderEntity.get();
+        orderEntity.setStatus(OrderStatus.FAILEDPAYMENT);
+        orderRepository.save(orderEntity);
+
+        log.info("Successfully changed order status to FAILEDPAYMENT.");
+        return new MessageResponseDTO(200, "Successfully changed order status to FAILEDPAYMENT.");
     }
 }
