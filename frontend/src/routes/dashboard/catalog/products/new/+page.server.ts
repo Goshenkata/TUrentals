@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ locals, fetch }) => {
 		);
 
 		if (!categoriesResponse.ok) {
-			console.log(await categoriesResponse.json());
+			console.log(categoriesResponse);
 			error(500, 'Failed to fetch categories');
 		}
 

@@ -11,7 +11,10 @@
 		PackagePlus,
 		Settings,
 		BookOpen,
-		Package
+		Package,
+		CircleDashed,
+		CalendarClock,
+		CalendarCheck
 	} from 'lucide-svelte/icons';
 	import { page } from '$app/stores';
 	import { Badge } from './ui/badge';
@@ -64,19 +67,59 @@
 					</Sidebar.MenuButton>
 				</Sidebar.MenuItem>
 
-				<Sidebar.MenuItem>
-					<Sidebar.MenuButton isActive={$page.url.pathname.includes('/dashboard/orders')}>
+				{#if user?.role === 'MANAGER' || user?.role === 'EMPLOYEE'}
+					<Collapsible.Root open={$page.url.pathname.includes('/orders')} class="group/collapsible">
 						{#snippet child({ props })}
-							<a href="/dashboard/orders" {...props}>
-								<CalendarRange />
-								<span>Поръчки ?</span>
-							</a>
+							<Sidebar.MenuItem {...props}>
+								<Collapsible.Trigger>
+									{#snippet child({ props })}
+										<Sidebar.MenuButton {...props}>
+											{#snippet tooltipContent()}
+												Поръчки
+											{/snippet}
+											<CalendarRange />
+											<span>Поръчки</span>
+											<ChevronRight
+												class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+											/>
+										</Sidebar.MenuButton>
+									{/snippet}
+								</Collapsible.Trigger>
+								<Collapsible.Content>
+									<Sidebar.MenuSub>
+										{#if user?.role === 'MANAGER'}
+											<Sidebar.MenuSubItem>
+												<Sidebar.MenuSubButton
+													isActive={$page.url.pathname === '/dashboard/orders/pending'}
+												>
+													{#snippet child({ props })}
+														<a href="/dashboard/orders/pending" {...props}>
+															<CalendarClock />
+															<span>Чакащи</span>
+														</a>
+													{/snippet}
+												</Sidebar.MenuSubButton>
+											</Sidebar.MenuSubItem>
+										{/if}
+
+										<Sidebar.MenuSubItem>
+											<Sidebar.MenuSubButton
+												isActive={$page.url.pathname === '/dashboard/orders/assigned'}
+											>
+												{#snippet child({ props })}
+													<a href="/dashboard/orders/assigned" {...props}>
+														<CalendarCheck />
+														<span>Мои поръчки</span>
+													</a>
+												{/snippet}
+											</Sidebar.MenuSubButton>
+										</Sidebar.MenuSubItem>
+									</Sidebar.MenuSub>
+								</Collapsible.Content>
+							</Sidebar.MenuItem>
 						{/snippet}
-					</Sidebar.MenuButton>
-					<Sidebar.MenuBadge>
-						<Badge class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full">6</Badge>
-					</Sidebar.MenuBadge>
-				</Sidebar.MenuItem>
+					</Collapsible.Root>
+				{/if}
 
 				{#if user?.role === 'MANAGER'}
 					<Collapsible.Root

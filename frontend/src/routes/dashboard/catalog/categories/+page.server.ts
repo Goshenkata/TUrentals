@@ -34,7 +34,7 @@ export const load: PageServerLoad = async ({ locals, fetch, url }) => {
 		);
 
 		if (!response.ok) {
-			console.log(await response.json());
+			console.log(response);
 			error(500, 'Failed to fetch categories');
 		}
 
