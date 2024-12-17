@@ -319,6 +319,9 @@ public class OrderService {
     @Transactional
     public MessageResponseDTO completeOrder(OrderCompleteDTO orderCompleteDTO, String name) {
         Optional<UserEntity> user = userRepository.findByEmail(name);
+        if (orderCompleteDTO.getOrderStatus() == null) {
+            return new MessageResponseDTO(400, "Invalid request");
+        }
         if (user.isEmpty()) {
             return new MessageResponseDTO(400, "User not found");
         }
