@@ -43,6 +43,7 @@ public class CategoryService {
     }
 
     public MessageResponseDTO deleteCategory(String name) {
+        //test
         Optional<CategoryEntity> cat = categoryRepository.findByName(name);
         if (cat.isEmpty()) {
             return new MessageResponseDTO(404, "Category not found");
