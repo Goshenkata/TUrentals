@@ -16,3 +16,9 @@ export enum OrderTypeEnum {
 	DELIVERY = 'DELIVERY',
 	PICKUP = 'PICKUP'
 }
+
+export enum OrderStatusEnum {
+	PENDING = 'PENDING',
+	DELIVERED = 'DELIVERED',
+	COMPLETED = 'COMPLETED'
+}

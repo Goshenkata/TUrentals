@@ -2,16 +2,32 @@
 	import CategoriesTable from './orders-table.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { ChevronLeft } from 'lucide-svelte';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import * as Form from '$lib/components/ui/form/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import * as Card from '$lib/components/ui/card';
-	import Label from '$lib/components/ui/label/label.svelte';
 	import { setContext } from 'svelte';
+	import { toast } from 'svelte-sonner';
 
 	let { data, form } = $props();
 
 	setContext('assignEmployeeForm', data.assignEmployeeForm);
+	setContext('employees', data.employees);
+	setContext('changeStatusForm', data.changeStatusForm);
+
+	$effect(() => {
+		if (form?.assignEmployeeSuccess) {
+			toast.success('Успешно зададен изпълнител.');
+		}
+
+		if (form?.errorAssignEmployee) {
+			toast.error('Неуспешно задаване на изпълнител.');
+		}
+
+		if (form?.changeStatusSuccess) {
+			toast.success('Успешно променен статус.');
+		}
+
+		if (form?.errorChangeStatus) {
+			toast.error('Неуспешна промяна на статус.');
+		}
+	});
 </script>
 
 <div

@@ -58,7 +58,7 @@ type PendingOrder = {
 	deliveryAddress: OrderDeliveryAddress;
 	lines: OrderLineItem[];
 	orderType: OrderType;
-	assignenedTo: null;
+	assignenedTo: User;
 };
 
 type AssignedOrder = PendingOrder & {
