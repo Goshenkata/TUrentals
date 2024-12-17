@@ -61,7 +61,7 @@ public class OrderController {
     }
 
     @PostMapping("complete")
-    @PreAuthorize("hasAuthority('EMPLOYEE') or hasAuthority('MANAGER')")
+    @PreAuthorize("hasAnyAuthority('MANAGER', 'EMPLOYEE')")
     @Operation(summary = "For employees or managers, complete an order")
     public ResponseEntity<MessageResponseDTO> completeOrder(@RequestBody OrderCompleteDTO orderCompleteDTO, Principal principal) {
         MessageResponseDTO response = orderService.completeOrder(orderCompleteDTO, principal.getName());
