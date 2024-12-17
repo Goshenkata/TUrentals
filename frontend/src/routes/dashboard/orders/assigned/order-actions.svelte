@@ -76,13 +76,19 @@
 			<Dialog.Title>Смяна на статус</Dialog.Title>
 		</Dialog.Header>
 		<form method="POST" action="?/changeStatus" use:changeStatusEnhanced class="grid gap-4">
-			<Form.Field form={changeStatusForm} name="status">
+			<Form.Field form={changeStatusForm} name="oerderStatus">
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Статус</Form.Label>
-						<Select.Root type="single" bind:value={$changeStatusFormData.status} name={props.name}>
+						<Select.Root
+							type="single"
+							bind:value={$changeStatusFormData.oerderStatus}
+							name={props.name}
+						>
 							<Select.Trigger {...props}>
-								{$changeStatusFormData.status ? $changeStatusFormData.status : 'Избери статус'}
+								{$changeStatusFormData.oerderStatus
+									? $changeStatusFormData.oerderStatus
+									: 'Избери статус'}
 							</Select.Trigger>
 							<Select.Content>
 								{#if (order.orderType = 'DELIVERY')}
