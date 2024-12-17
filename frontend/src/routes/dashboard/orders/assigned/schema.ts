@@ -12,7 +12,7 @@ export type AssignEmployeeSchema = z.infer<typeof assignEmployeeSchema>;
 export const changeStatusSchema = z.object({
 	orderId: z.number(),
 	note: string().optional(),
-	oerderStatus: z.enum(
+	orderStatus: z.enum(
 		Object.keys(OrderStatusEnum).map((key) => key) as [keyof typeof OrderStatusEnum]
 	)
 });
