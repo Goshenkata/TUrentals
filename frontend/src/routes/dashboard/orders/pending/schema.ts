@@ -1,25 +1,10 @@
+import { OrderTypeEnum } from '$lib/enums';
 import { z } from 'zod';
 
-const categorySchema = z.object({
-	name: z
-		.string({ required_error: 'Полето е задължително.' })
-		.min(1, { message: 'Полето е задължително.' })
-		.max(128, {
-			message: 'Не може да е по дълго от 128 символа.'
-		})
-		.trim()
+export const assignEmployeeSchema = z.object({
+	employeeId: z.number(),
+	orderId: z.number(),
+	orderType: z.enum(Object.keys(OrderTypeEnum).map((key) => key) as [keyof typeof OrderTypeEnum])
 });
 
-export const newCategorySchema = categorySchema;
-
-export type NewCategorySchema = z.infer<typeof newCategorySchema>;
-
-export const editCategorySchema = categorySchema.extend({
-	id: z.number()
-});
-
-export type EditCategorySchema = z.infer<typeof editCategorySchema>;
-
-export const deleteCategorySchema = z.object({ id: z.number() });
-
-export type DeleteCategorySchema = z.infer<typeof deleteCategorySchema>;
+export type AssignEmployeeSchema = z.infer<typeof assignEmployeeSchema>;

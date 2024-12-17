@@ -7,8 +7,11 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Card from '$lib/components/ui/card';
 	import Label from '$lib/components/ui/label/label.svelte';
+	import { setContext } from 'svelte';
 
 	let { data, form } = $props();
+
+	setContext('assignEmployeeForm', data.assignEmployeeForm);
 </script>
 
 <div

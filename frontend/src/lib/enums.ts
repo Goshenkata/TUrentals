@@ -11,3 +11,8 @@ export enum SortByEnum {
 	PRICE_ASC = 'Цена възходящо',
 	PRICE_DESC = 'Цена низходящо'
 }
+
+export enum OrderTypeEnum {
+	DELIVERY = 'DELIVERY',
+	PICKUP = 'PICKUP'
+}

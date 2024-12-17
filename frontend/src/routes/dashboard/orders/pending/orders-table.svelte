@@ -22,7 +22,9 @@
 		<div class="w-full space-y-2">
 			<div class="flex justify-between gap-2">
 				<div class="">
-					ID: {order.id} | За дата: {new Date(order.deliveryDate).toLocaleDateString('bg-BG')}
+					ID: {order.id} | За дата: {new Date(
+						order.orderType === 'DELIVERY' ? order.deliveryDate : order.returnDate
+					).toLocaleDateString('bg-BG')}
 				</div>
 				<div>
 					Цена: <span class="font-semibold">
@@ -123,7 +125,7 @@
 			<div class="grid items-center justify-center">
 				<div class="flex flex-col items-center">
 					<ArrowRightLeft class="h-8 w-8 stroke-1"></ArrowRightLeft>
-					<div>...</div>
+					<OrderActions order={order}></OrderActions>
 				</div>
 			</div>
 		{/each}
