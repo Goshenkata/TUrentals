@@ -47,14 +47,14 @@
 		validators: zodClient(assignEmployeeSchema),
 		resetForm: true,
 		dataType: 'json',
-		id: `assign-employee-form-${order.id}`
+		id: `assign-employee-form-${order.id}-${order.orderType}`
 	});
 
 	const changeStatusForm = superForm(changeStatusFormAndData, {
 		validators: zodClient(changeStatusSchema),
 		resetForm: true,
 		dataType: 'json',
-		id: `change-status-form-${order.id}`
+		id: `change-status-form-${order.id}-${order.orderType}`
 	});
 
 	const {
@@ -223,17 +223,19 @@
 								{$changeStatusFormData.status ? $changeStatusFormData.status : 'Избери статус'}
 							</Select.Trigger>
 							<Select.Content>
-								{#if (order.orderType = 'DELIVERY')}
+								{#if order.orderType === 'DELIVERY'}
 									<Select.Item
 										value={OrderStatusEnum.DELIVERED}
 										label={OrderStatusEnum.DELIVERED}
 									/>
-								{:else}
+								{/if}
+								{#if order.orderType === 'PICKUP'}
 									<Select.Item
 										value={OrderStatusEnum.COMPLETED}
 										label={OrderStatusEnum.COMPLETED}
 									/>
 								{/if}
+								<Select.Item value={OrderStatusEnum.CANCELED} label={OrderStatusEnum.CANCELED} />
 							</Select.Content>
 						</Select.Root>
 					{/snippet}

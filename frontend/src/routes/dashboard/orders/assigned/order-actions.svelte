@@ -96,6 +96,7 @@
 										label={OrderStatusEnum.COMPLETED}
 									/>
 								{/if}
+								<Select.Item value={OrderStatusEnum.CANCELED} label={OrderStatusEnum.CANCELED} />
 							</Select.Content>
 						</Select.Root>
 					{/snippet}

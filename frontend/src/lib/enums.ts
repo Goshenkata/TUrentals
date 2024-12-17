@@ -20,5 +20,6 @@ export enum OrderTypeEnum {
 export enum OrderStatusEnum {
 	PENDING = 'PENDING',
 	DELIVERED = 'DELIVERED',
-	COMPLETED = 'COMPLETED'
+	COMPLETED = 'COMPLETED',
+	CANCELED = 'CANCELED'
 }

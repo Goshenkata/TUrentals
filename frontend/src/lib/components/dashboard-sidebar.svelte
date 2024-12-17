@@ -102,18 +102,20 @@
 											</Sidebar.MenuSubItem>
 										{/if}
 
-										<Sidebar.MenuSubItem>
-											<Sidebar.MenuSubButton
-												isActive={$page.url.pathname === '/dashboard/orders/assigned'}
-											>
-												{#snippet child({ props })}
-													<a href="/dashboard/orders/assigned" {...props}>
-														<CalendarCheck />
-														<span>Мои поръчки</span>
-													</a>
-												{/snippet}
-											</Sidebar.MenuSubButton>
-										</Sidebar.MenuSubItem>
+										{#if user?.role === 'EMPLOYEE'}
+											<Sidebar.MenuSubItem>
+												<Sidebar.MenuSubButton
+													isActive={$page.url.pathname === '/dashboard/orders/assigned'}
+												>
+													{#snippet child({ props })}
+														<a href="/dashboard/orders/assigned" {...props}>
+															<CalendarCheck />
+															<span>Мои поръчки</span>
+														</a>
+													{/snippet}
+												</Sidebar.MenuSubButton>
+											</Sidebar.MenuSubItem>
+										{/if}
 									</Sidebar.MenuSub>
 								</Collapsible.Content>
 							</Sidebar.MenuItem>
