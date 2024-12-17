@@ -249,7 +249,8 @@ public class OrderService {
         for (OrderEntity orderEntity : pendingOrdersAfterToday) {
             OrderDTO pickup = modelMapper.map(orderEntity, OrderDTO.class);
             pickup.setOrderType(OrderType.PICKUP);
-            pendingOrders.add(pickup);
+            pendingOrders.add(pickup)
+            ;
 
             getAssignment(orderEntity, OrderType.PICKUP).ifPresent(orderAssignmentEntity -> {
                 pickup.setAssignenedTo(modelMapper.map(orderAssignmentEntity.getEmployee(), UserDto.class));
@@ -260,7 +261,7 @@ public class OrderService {
                 OrderDTO delivery = modelMapper.map(orderEntity, OrderDTO.class);
                 delivery.setOrderType(OrderType.DELIVERY);
                 getAssignment(orderEntity, OrderType.DELIVERY).ifPresent(orderAssignmentEntity -> {
-                    pickup.setAssignenedTo(modelMapper.map(orderAssignmentEntity.getEmployee(), UserDto.class));
+                    delivery.setAssignenedTo(modelMapper.map(orderAssignmentEntity.getEmployee(), UserDto.class));
                 });
                 pendingOrders.add(delivery);
 

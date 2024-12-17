@@ -43,7 +43,8 @@ public class DBInit implements CommandLineRunner {
                     new UserEntity("Admin", "Adminov", adminEmail, passwordEncoder.encode(adminPassword), "08142035434", RoleEnum.ADMIN),
                     new UserEntity("User", "Userov", "user@gmail.com", passwordEncoder.encode("userPassword"), "08242035433", RoleEnum.USER),
                     new UserEntity("Manager", "Managerov", "manager@gmail.com", passwordEncoder.encode("managerPassword"), "08342035433", RoleEnum.MANAGER),
-                    new UserEntity("Employee", "Employerov", "employee@gmail.com", passwordEncoder.encode("employeePassword"), "08442035433", RoleEnum.EMPLOYEE)
+                    new UserEntity("Employee", "Employerov", "employee@gmail.com", passwordEncoder.encode("employeePassword"), "08442035433", RoleEnum.EMPLOYEE),
+            new UserEntity("Employee", "Employerov", "employee2@gmail.com", passwordEncoder.encode("employeePassword"), "08442035434", RoleEnum.EMPLOYEE)
             );
             userRepository.saveAll(users);
             log.info("Users initialized in the database");
