@@ -15,8 +15,6 @@ public class ItemCreateDTO {
     @NotNull
     @Size(min = 3, max = 50)
     private String name;
-    @NotNull
-    @Size(min = 3, max = 3000)
     private String description;
     @NotNull
     private BigDecimal pricePerDay;

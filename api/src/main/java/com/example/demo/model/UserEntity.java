@@ -43,9 +43,9 @@ public class UserEntity {
     @NonNull
     private RoleEnum role;
 
-    @OneToMany(mappedBy = "customer")
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.PERSIST)
     List<OrderEntity> orders;
 
-    @OneToMany(mappedBy = "employee")
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     List<OrderAssignmentEntity> assignments;
 }

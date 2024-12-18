@@ -22,7 +22,7 @@ public class ItemEntity {
     @Column(nullable = false)
     private BigDecimal pricePerDay;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER)
     private ImageEntity image;
 
     @ManyToOne(fetch = FetchType.EAGER)

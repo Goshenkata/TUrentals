@@ -165,7 +165,7 @@
 			</form>
 			<div class="mt-4 text-center text-sm">
 				Вече имаш профил?
-				<a href="/register" class="underline"> Вход </a>
+				<a href="/login" class="underline"> Вход </a>
 			</div>
 		</Card.Content>
 	</Card.Root>

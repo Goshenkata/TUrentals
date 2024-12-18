@@ -7,11 +7,11 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import DashboardSidebar from '$lib/components/dashboard-sidebar.svelte';
 
-	const { children } = $props();
+	const { children, data } = $props();
 </script>
 
 <Sidebar.Provider>
-	<DashboardSidebar />
+	<DashboardSidebar user={data.user} />
 	<Sidebar.Inset class="relative">
 		<header class="flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
 			<Sidebar.Trigger class="-ml-1" />
@@ -37,13 +37,17 @@
 					<span class="sr-only">Покажи/скрий менюто</span>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content align="end">
-					<DropdownMenu.Label>Моят профил</DropdownMenu.Label>
-					<DropdownMenu.Separator />
-					<DropdownMenu.Item>Настройки на профила</DropdownMenu.Item>
-					<DropdownMenu.Item>Помощ</DropdownMenu.Item>
+					<DropdownMenu.Label>
+						<div>
+							<div>{data.user.firstName} {data.user.lastName}</div>
+							<div class="text-xs text-muted-foreground">
+								{data.user.email}
+							</div>
+						</div>
+					</DropdownMenu.Label>
 					<DropdownMenu.Separator />
 
-					<Button size="sm" class="w-full" href="logout">Изход</Button>
+					<Button size="sm" class="w-full" href="/logout">Изход</Button>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
 		</header>

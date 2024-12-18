@@ -30,12 +30,12 @@ public class ItemController {
     @PostMapping("create")
     @Operation(summary = "Create a new item")
     @PreAuthorize("hasAuthority('MANAGER')")
-    public ResponseEntity<Long> createItem(@Valid ItemCreateDTO itemCreateDTO, BindingResult bindingResult) {
+    public ResponseEntity<MessageResponseDTO> createItem(@Valid @RequestBody ItemCreateDTO itemCreateDTO, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(400).body(new MessageResponseDTO(400, bindingResult.getAllErrors().get(0).getDefaultMessage()));
         }
         Long id = itemService.createItem(itemCreateDTO);
-        return id != -1 ? ResponseEntity.ok(id) : ResponseEntity.badRequest().build();
+        return id != -1 ? ResponseEntity.ok(new MessageResponseDTO(200, "Item created with id: " + id)) : ResponseEntity.badRequest().body(new MessageResponseDTO(400, "Item with this name already exists"));
     }
     @GetMapping("search")
     public ResponseEntity<List<ItemDTO>> searchItems(

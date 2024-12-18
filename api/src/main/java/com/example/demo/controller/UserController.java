@@ -92,7 +92,7 @@ public class UserController {
 
     @GetMapping("getUsers")
     @Operation(summary = "Gets users, can be sorted by role or email")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER')")
     public ResponseEntity<List<UserDto>> getUsers(@RequestParam(required = false) String role,
                                                   @RequestParam(required = false) String email) {
         if (role != null && RoleEnum.getRole(role).isEmpty()) {

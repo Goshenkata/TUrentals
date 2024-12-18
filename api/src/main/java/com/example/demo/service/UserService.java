@@ -5,7 +5,11 @@ import com.example.demo.dto.enums.RoleEnum;
 import com.example.demo.dto.request.RegistrationDTO;
 import com.example.demo.dto.response.UserDto;
 import com.example.demo.model.UserEntity;
+import com.example.demo.repository.AssignmentRepository;
+import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.WarehouseRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import me.xdrop.fuzzywuzzy.FuzzySearch;
 import me.xdrop.fuzzywuzzy.model.ExtractedResult;
@@ -23,6 +27,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
+    private final AssignmentRepository assignmentRepository;
+    private final OrderRepository orderRepository;
+
 
     public MessageResponseDTO registerUser(RegistrationDTO registrationDTO, RoleEnum role) {
         if (userRepository.existsByEmail(registrationDTO.getEmail())) {
@@ -67,11 +74,20 @@ public class UserService {
                 .toList();
     }
 
+    @Transactional
     public MessageResponseDTO deleteUser(String email) {
         Optional<UserEntity> userEntity = userRepository.findByEmail(email);
         if (userEntity.isEmpty()) {
             return new MessageResponseDTO(404, String.format("User with email %s not found", email));
         }
+        userEntity.get().getOrders().forEach(orderEntity -> {
+            orderEntity.setCustomer(null);
+            orderRepository.save(orderEntity);
+        });
+        userEntity.get().getAssignments().forEach(orderAssignmentEntity -> {
+            orderAssignmentEntity.setEmployee(null);
+            assignmentRepository.save(orderAssignmentEntity);
+        });
         userRepository.delete(userEntity.get());
         return new MessageResponseDTO(200, String.format("User with email %s deleted", email));
     }

@@ -11,17 +11,26 @@
 		PackagePlus,
 		Settings,
 		BookOpen,
-		Package
+		Package,
+		CircleDashed,
+		CalendarClock,
+		CalendarCheck
 	} from 'lucide-svelte/icons';
 	import { page } from '$app/stores';
 	import { Badge } from './ui/badge';
 	import Skeleton from './ui/skeleton/skeleton.svelte';
+	import type { User } from '$lib/types';
+
+	type SidebarPropsWithRole = Omit<ComponentProps<typeof Sidebar.Root>, 'userRole'> & {
+		user: User;
+	};
 
 	let {
 		ref = $bindable(null),
 		collapsible = 'icon',
+		user,
 		...restProps
-	}: ComponentProps<typeof Sidebar.Root> = $props();
+	}: SidebarPropsWithRole = $props();
 </script>
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>
@@ -58,93 +67,142 @@
 					</Sidebar.MenuButton>
 				</Sidebar.MenuItem>
 
-				<Sidebar.MenuItem>
-					<Sidebar.MenuButton isActive={$page.url.pathname.includes('/dashboard/orders')}>
+				{#if user?.role === 'MANAGER' || user?.role === 'EMPLOYEE'}
+					<Collapsible.Root open={$page.url.pathname.includes('/orders')} class="group/collapsible">
 						{#snippet child({ props })}
-							<a href="/dashboard/orders" {...props}>
-								<CalendarRange />
-								<span>Поръчки ?</span>
-							</a>
+							<Sidebar.MenuItem {...props}>
+								<Collapsible.Trigger>
+									{#snippet child({ props })}
+										<Sidebar.MenuButton {...props}>
+											{#snippet tooltipContent()}
+												Поръчки
+											{/snippet}
+											<CalendarRange />
+											<span>Поръчки</span>
+											<ChevronRight
+												class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+											/>
+										</Sidebar.MenuButton>
+									{/snippet}
+								</Collapsible.Trigger>
+								<Collapsible.Content>
+									<Sidebar.MenuSub>
+										{#if user?.role === 'MANAGER'}
+											<Sidebar.MenuSubItem>
+												<Sidebar.MenuSubButton
+													isActive={$page.url.pathname === '/dashboard/orders/pending'}
+												>
+													{#snippet child({ props })}
+														<a href="/dashboard/orders/pending" {...props}>
+															<CalendarClock />
+															<span>Чакащи</span>
+														</a>
+													{/snippet}
+												</Sidebar.MenuSubButton>
+											</Sidebar.MenuSubItem>
+										{/if}
+
+										{#if user?.role === 'EMPLOYEE'}
+											<Sidebar.MenuSubItem>
+												<Sidebar.MenuSubButton
+													isActive={$page.url.pathname === '/dashboard/orders/assigned'}
+												>
+													{#snippet child({ props })}
+														<a href="/dashboard/orders/assigned" {...props}>
+															<CalendarCheck />
+															<span>Мои поръчки</span>
+														</a>
+													{/snippet}
+												</Sidebar.MenuSubButton>
+											</Sidebar.MenuSubItem>
+										{/if}
+									</Sidebar.MenuSub>
+								</Collapsible.Content>
+							</Sidebar.MenuItem>
 						{/snippet}
-					</Sidebar.MenuButton>
-					<Sidebar.MenuBadge>
-						<Badge class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full">6</Badge>
-					</Sidebar.MenuBadge>
-				</Sidebar.MenuItem>
+					</Collapsible.Root>
+				{/if}
 
-				<Collapsible.Root open={$page.url.pathname.includes('/catalog')} class="group/collapsible">
-					{#snippet child({ props })}
-						<Sidebar.MenuItem {...props}>
-							<Collapsible.Trigger>
-								{#snippet child({ props })}
-									<Sidebar.MenuButton {...props}>
-										{#snippet tooltipContent()}
-											Каталог
-										{/snippet}
-										<BookOpen />
-										<span>Каталог</span>
-										<ChevronRight
-											class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
-										/>
-									</Sidebar.MenuButton>
-								{/snippet}
-							</Collapsible.Trigger>
-							<Collapsible.Content>
-								<Sidebar.MenuSub>
-									<Sidebar.MenuSubItem>
-										<Sidebar.MenuSubButton
-											isActive={$page.url.pathname === '/dashboard/catalog/categories'}
-										>
-											{#snippet child({ props })}
-												<a href="/dashboard/catalog/categories" {...props}>
-													<Boxes />
-													<span>Категории</span>
-												</a>
-											{/snippet}
-										</Sidebar.MenuSubButton>
-									</Sidebar.MenuSubItem>
-
-									<Sidebar.MenuSubItem>
-										<Sidebar.MenuSubButton
-											isActive={$page.url.pathname === '/dashboard/catalog/products'}
-										>
-											{#snippet child({ props })}
-												<a href="/dashboard/catalog/products" {...props}>
-													<Package />
-													<span>Продукти</span>
-												</a>
-											{/snippet}
-										</Sidebar.MenuSubButton>
-									</Sidebar.MenuSubItem>
-
-									<Sidebar.MenuSubItem>
-										<Sidebar.MenuSubButton
-											isActive={$page.url.pathname === '/dashboard/catalog/products/new'}
-										>
-											{#snippet child({ props })}
-												<a href="/dashboard/catalog/products/new" {...props}>
-													<PackagePlus />
-													<span>Добавяне на продукт</span>
-												</a>
-											{/snippet}
-										</Sidebar.MenuSubButton>
-									</Sidebar.MenuSubItem>
-								</Sidebar.MenuSub>
-							</Collapsible.Content>
-						</Sidebar.MenuItem>
-					{/snippet}
-				</Collapsible.Root>
-
-				<Sidebar.MenuItem>
-					<Sidebar.MenuButton isActive={$page.url.pathname.includes('/dashboard/users')}>
+				{#if user?.role === 'MANAGER'}
+					<Collapsible.Root
+						open={$page.url.pathname.includes('/catalog')}
+						class="group/collapsible"
+					>
 						{#snippet child({ props })}
-							<a href="/dashboard/users" {...props}>
-								<Users />
-								<span>Потребители</span>
-							</a>
+							<Sidebar.MenuItem {...props}>
+								<Collapsible.Trigger>
+									{#snippet child({ props })}
+										<Sidebar.MenuButton {...props}>
+											{#snippet tooltipContent()}
+												Каталог
+											{/snippet}
+											<BookOpen />
+											<span>Каталог</span>
+											<ChevronRight
+												class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+											/>
+										</Sidebar.MenuButton>
+									{/snippet}
+								</Collapsible.Trigger>
+								<Collapsible.Content>
+									<Sidebar.MenuSub>
+										<Sidebar.MenuSubItem>
+											<Sidebar.MenuSubButton
+												isActive={$page.url.pathname === '/dashboard/catalog/categories'}
+											>
+												{#snippet child({ props })}
+													<a href="/dashboard/catalog/categories" {...props}>
+														<Boxes />
+														<span>Категории</span>
+													</a>
+												{/snippet}
+											</Sidebar.MenuSubButton>
+										</Sidebar.MenuSubItem>
+
+										<Sidebar.MenuSubItem>
+											<Sidebar.MenuSubButton
+												isActive={$page.url.pathname === '/dashboard/catalog/products'}
+											>
+												{#snippet child({ props })}
+													<a href="/dashboard/catalog/products" {...props}>
+														<Package />
+														<span>Продукти</span>
+													</a>
+												{/snippet}
+											</Sidebar.MenuSubButton>
+										</Sidebar.MenuSubItem>
+
+										<Sidebar.MenuSubItem>
+											<Sidebar.MenuSubButton
+												isActive={$page.url.pathname === '/dashboard/catalog/products/new'}
+											>
+												{#snippet child({ props })}
+													<a href="/dashboard/catalog/products/new" {...props}>
+														<PackagePlus />
+														<span>Добавяне на продукт</span>
+													</a>
+												{/snippet}
+											</Sidebar.MenuSubButton>
+										</Sidebar.MenuSubItem>
+									</Sidebar.MenuSub>
+								</Collapsible.Content>
+							</Sidebar.MenuItem>
 						{/snippet}
-					</Sidebar.MenuButton>
-				</Sidebar.MenuItem>
+					</Collapsible.Root>
+				{/if}
+
+				{#if user?.role === 'ADMIN'}
+					<Sidebar.MenuItem>
+						<Sidebar.MenuButton isActive={$page.url.pathname.includes('/dashboard/users')}>
+							{#snippet child({ props })}
+								<a href="/dashboard/users" {...props}>
+									<Users />
+									<span>Потребители</span>
+								</a>
+							{/snippet}
+						</Sidebar.MenuButton>
+					</Sidebar.MenuItem>
+				{/if}
 			</Sidebar.Menu>
 		</Sidebar.Group>
 	</Sidebar.Content>

@@ -21,7 +21,7 @@ public class OrderEntity {
     @Column(nullable = false)
     BigDecimal totalPrice;
     @Column(nullable = false)
-     LocalDate deliveryDate;
+    LocalDate deliveryDate;
     @Column(nullable = false)
     LocalDate returnDate;
     @OneToOne
@@ -31,7 +31,8 @@ public class OrderEntity {
     @Column
     String note;
 
-    @ManyToOne
+    @ManyToOne()
+    @JoinColumn(name = "customer_id", nullable = true)
     UserEntity customer;
 
     @OneToMany(fetch = FetchType.EAGER)

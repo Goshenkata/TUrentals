@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class OrderCompleteDTO {
     @NotNull @Positive
     private Long orderId;
+    @NotNull
     private OrderStatus orderStatus;
     private String note;
 }

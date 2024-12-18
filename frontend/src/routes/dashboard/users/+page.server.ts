@@ -74,8 +74,6 @@ export const actions: Actions = {
 			if (foundUser.ok) {
 				const [user] = await foundUser.json();
 
-				console.log(user);
-
 				if (user) return { form, emailExists: true };
 			}
 		} catch (_) {}
@@ -90,8 +88,6 @@ export const actions: Actions = {
 				method: 'POST',
 				body: JSON.stringify(form.data)
 			});
-
-			console.log(response);
 
 			if (!response.ok) {
 				return { form, errorCreateUser: true };

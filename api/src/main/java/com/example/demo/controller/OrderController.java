@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.common.MessageResponseDTO;
+import com.example.demo.dto.enums.OrderType;
 import com.example.demo.dto.request.AssignToEmployeeDTO;
 import com.example.demo.dto.request.OrderCompleteDTO;
 import com.example.demo.dto.request.OrderCreateDTO;
@@ -26,10 +27,9 @@ public class OrderController {
 
     @PostMapping("create")
     @Operation(summary = "Create a new order, if the items are not available it returns the item Ids and the available quantity")
-    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
-    public ResponseEntity<CreateOrderResultDTO> createOrder(@Valid @RequestBody OrderCreateDTO orderCreateDTO, BindingResult bindingResult, Principal principal) {
+    public ResponseEntity<?> createOrder(@Valid @RequestBody OrderCreateDTO orderCreateDTO, BindingResult bindingResult, Principal principal) {
         if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(400).body(new MessageResponseDTO(400, bindingResult.getAllErrors().get(0).getDefaultMessage()));
         }
         CreateOrderResultDTO result = orderService.createOrder(orderCreateDTO, principal.getName());
         return ResponseEntity.status(result.getResult().status()).body(result);
@@ -60,7 +60,7 @@ public class OrderController {
     }
 
     @PostMapping("complete")
-    @PreAuthorize("hasAuthority('EMPLOYEE') or hasAuthority('MANAGER')")
+    @PreAuthorize("hasAnyAuthority('MANAGER', 'EMPLOYEE')")
     @Operation(summary = "For employees or managers, complete an order")
     public ResponseEntity<MessageResponseDTO> completeOrder(@RequestBody OrderCompleteDTO orderCompleteDTO, Principal principal) {
         MessageResponseDTO response = orderService.completeOrder(orderCompleteDTO, principal.getName());

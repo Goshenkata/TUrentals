@@ -5,10 +5,7 @@ import com.example.demo.dto.enums.OrderStatus;
 import com.example.demo.dto.enums.OrderType;
 import com.example.demo.dto.enums.RoleEnum;
 import com.example.demo.dto.request.*;
-import com.example.demo.dto.response.CreateOrderResultDTO;
-import com.example.demo.dto.response.OrderDTO;
-import com.example.demo.dto.response.OrderLineDTO;
-import com.example.demo.dto.response.UserDto;
+import com.example.demo.dto.response.*;
 import com.example.demo.model.ItemEntity;
 import com.example.demo.model.OrderAssignmentEntity;
 import com.example.demo.model.OrderEntity;
@@ -68,7 +65,7 @@ public class OrderService {
             int availability = itemService.checkAvailabilityAtDateRange(itemDTO.getItemId(), orderCreateDTO.getDeliveryDate(), orderCreateDTO.getReturnDate());
             if (availability < itemDTO.getQuantity()) {
                 OrderLineDTO orderLineDTO = new OrderLineDTO();
-                orderLineDTO.setItemId(itemDTO.getItemId());
+                orderLineDTO.setItem(modelMapper.map(itemEntity.get(), ItemDTO.class));
                 orderLineDTO.setQuantity(availability);
                 invalidItems.add(orderLineDTO);
             }
@@ -307,7 +304,7 @@ public class OrderService {
                 OrderDTO delivery = modelMapper.map(orderEntity, OrderDTO.class);
                 delivery.setOrderType(OrderType.DELIVERY);
                 getAssignment(orderEntity, OrderType.DELIVERY).ifPresent(orderAssignmentEntity -> {
-                    pickup.setAssignenedTo(modelMapper.map(orderAssignmentEntity.getEmployee(), UserDto.class));
+                    delivery.setAssignenedTo(modelMapper.map(orderAssignmentEntity.getEmployee(), UserDto.class));
                 });
                 pendingOrders.add(delivery);
 
@@ -366,6 +363,9 @@ public class OrderService {
     @Transactional
     public MessageResponseDTO completeOrder(OrderCompleteDTO orderCompleteDTO, String name) {
         Optional<UserEntity> user = userRepository.findByEmail(name);
+        if (orderCompleteDTO.getOrderStatus() == null) {
+            return new MessageResponseDTO(400, "Invalid request");
+        }
         if (user.isEmpty()) {
             return new MessageResponseDTO(400, "User not found");
         }

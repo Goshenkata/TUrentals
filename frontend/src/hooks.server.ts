@@ -1,3 +1,4 @@
+import { Role } from '$lib/enums';
 import { deleteAuthenticationCookies } from '$lib/server/authCookies';
 import { redirect, type Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
@@ -42,9 +43,9 @@ const authGuard: Handle = async ({ event, resolve }) => {
 	const { locals } = event;
 
 	if (
-		locals.user?.role !== 'ADMIN' &&
-		locals.user?.role !== 'MANAGER' &&
-		locals.user?.role !== 'EMPLOYEE' &&
+		locals.user?.role !== Role.ADMIN &&
+		locals.user?.role !== Role.MANAGER &&
+		locals.user?.role !== Role.EMPLOYEE &&
 		event.url.pathname.startsWith('/dashboard')
 	) {
 		redirect(303, '/');

@@ -12,7 +12,7 @@ public class WarehouseLineEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER)
     private ItemEntity item;
     private int quantity;
 }

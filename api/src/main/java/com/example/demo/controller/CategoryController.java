@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.common.MessageResponseDTO;
+import com.example.demo.dto.response.CategoryDTO;
 import com.example.demo.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -23,17 +25,17 @@ public class CategoryController {
         return ResponseEntity.ok().build();
     }
 
-//    @DeleteMapping("")
-//    @Operation(summary = "Delete a category by name")
-//    public ResponseEntity<MessageResponseDTO> deleteCategory(@RequestParam String name) {
-//        MessageResponseDTO response = categoryService.deleteCategory(name);
-//        return ResponseEntity.status(response.status()).body(response);
-//    }
+    @DeleteMapping("")
+    @Operation(summary = "Delete a category by name")
+    public ResponseEntity<MessageResponseDTO> deleteCategory(@RequestParam String name) {
+        MessageResponseDTO response = categoryService.deleteCategory(name);
+        return ResponseEntity.status(response.status()).body(response);
+    }
 
     @GetMapping("search")
     @Operation(summary = "returns all categories or fuzzy search by name")
     @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
-    ResponseEntity<List<String>> searchCategories(@RequestParam(required = false) String query) {
+    ResponseEntity<List<CategoryDTO>> searchCategories(@RequestParam(required = false) String query) {
         return ResponseEntity.ok(categoryService.searchCategories(query));
     }
 }
