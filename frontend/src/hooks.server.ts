@@ -1,3 +1,4 @@
+import { PUBLIC_API_HOST } from '$env/static/public';
 import { Role } from '$lib/enums';
 import { deleteAuthenticationCookies } from '$lib/server/authCookies';
 import { redirect, type Handle } from '@sveltejs/kit';
@@ -15,7 +16,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	}
 
 	try {
-		const res = await fetch('https://tu-rentals-api.webdevlimited.eu/user/isValid', {
+		const res = await fetch(`${PUBLIC_API_HOST}/user/isValid`, {
 			headers: {
 				Authorization: `Bearer ${token}`
 			},

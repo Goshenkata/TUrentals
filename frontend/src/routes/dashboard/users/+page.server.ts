@@ -5,6 +5,7 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { deleteUserSchema, editUserSchema, newUserSchema } from './schema';
 import type { NonNullableUser } from '$lib/types';
 import { generateUrlParams } from '$lib/utils';
+import { PUBLIC_API_HOST } from '$env/static/public';
 
 export const load: PageServerLoad = async ({ locals, fetch, url }) => {
 	if (!locals.user) {
@@ -26,14 +27,11 @@ export const load: PageServerLoad = async ({ locals, fetch, url }) => {
 	const deleteUserForm = await superValidate(zod(deleteUserSchema));
 
 	try {
-		const response = await fetch(
-			`https://tu-rentals-api.webdevlimited.eu/user/getUsers${urlParams}`,
-			{
-				headers: {
-					Authorization: `Bearer ${locals.user.token}`
-				}
+		const response = await fetch(`${PUBLIC_API_HOST}/user/getUsers${urlParams}`, {
+			headers: {
+				Authorization: `Bearer ${locals.user.token}`
 			}
-		);
+		});
 
 		if (!response.ok) {
 			error(500, 'Failed to fetch users');
@@ -62,14 +60,11 @@ export const actions: Actions = {
 
 		// Check if the email exists
 		try {
-			const foundUser = await fetch(
-				`https://tu-rentals-api.webdevlimited.eu/user/getUsers?email=${form.data.email}`,
-				{
-					headers: {
-						Authorization: `Bearer ${locals.user.token}`
-					}
+			const foundUser = await fetch(`${PUBLIC_API_HOST}/user/getUsers?email=${form.data.email}`, {
+				headers: {
+					Authorization: `Bearer ${locals.user.token}`
 				}
-			);
+			});
 
 			if (foundUser.ok) {
 				const [user] = await foundUser.json();
@@ -79,7 +74,7 @@ export const actions: Actions = {
 		} catch (_) {}
 
 		try {
-			const response = await fetch('https://tu-rentals-api.webdevlimited.eu/user/createUser', {
+			const response = await fetch(`${PUBLIC_API_HOST}/user/createUser`, {
 				headers: {
 					Authorization: `Bearer ${locals.user.token}`,
 					Accept: 'application/json',
@@ -113,7 +108,7 @@ export const actions: Actions = {
 
 		try {
 			const response = await fetch(
-				`https://tu-rentals-api.webdevlimited.eu/user/deleteUser/${encodeURIComponent(form.data.email)}`,
+				`${PUBLIC_API_HOST}/user/deleteUser/${encodeURIComponent(form.data.email)}`,
 				{
 					headers: {
 						Authorization: `Bearer ${locals.user.token}`
@@ -147,18 +142,15 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await fetch(
-				`https://tu-rentals-api.webdevlimited.eu/user/updateUser/${form.data.id}`,
-				{
-					headers: {
-						Authorization: `Bearer ${locals.user.token}`,
-						Accept: 'application/json',
-						'Content-Type': 'application/json'
-					},
-					method: 'POST',
-					body: JSON.stringify(form.data)
-				}
-			);
+			const response = await fetch(`${PUBLIC_API_HOST}/user/updateUser/${form.data.id}`, {
+				headers: {
+					Authorization: `Bearer ${locals.user.token}`,
+					Accept: 'application/json',
+					'Content-Type': 'application/json'
+				},
+				method: 'POST',
+				body: JSON.stringify(form.data)
+			});
 
 			if (!response.ok) {
 				return { form, errorEditUser: true };

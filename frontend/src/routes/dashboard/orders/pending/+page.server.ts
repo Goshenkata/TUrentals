@@ -5,6 +5,7 @@ import { Role } from '$lib/enums';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { assignEmployeeSchema, changeStatusSchema } from './schema';
+import { PUBLIC_API_HOST } from '$env/static/public';
 
 export const load: PageServerLoad = async ({ locals, fetch, url }) => {
 	if (!locals.user || locals.user.role !== 'MANAGER') {
@@ -16,7 +17,7 @@ export const load: PageServerLoad = async ({ locals, fetch, url }) => {
 	const changeStatusForm = await superValidate(zod(changeStatusSchema));
 
 	try {
-		const ordersRes = await fetch(`https://tu-rentals-api.webdevlimited.eu/order/getPending`, {
+		const ordersRes = await fetch(`${PUBLIC_API_HOST}/order/getPending`, {
 			headers: {
 				Authorization: `Bearer ${locals.user.token}`
 			}
@@ -29,14 +30,11 @@ export const load: PageServerLoad = async ({ locals, fetch, url }) => {
 
 		const orders: PendingOrder[] = await ordersRes.json();
 
-		const employeesRes = await fetch(
-			`https://tu-rentals-api.webdevlimited.eu/user/getUsers?role=${Role.EMPLOYEE}`,
-			{
-				headers: {
-					Authorization: `Bearer ${locals.user.token}`
-				}
+		const employeesRes = await fetch(`${PUBLIC_API_HOST}/user/getUsers?role=${Role.EMPLOYEE}`, {
+			headers: {
+				Authorization: `Bearer ${locals.user.token}`
 			}
-		);
+		});
 
 		if (!employeesRes.ok) {
 			console.log(employeesRes);
@@ -61,7 +59,7 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod(assignEmployeeSchema));
 
 		try {
-			const res = await fetch(`https://tu-rentals-api.webdevlimited.eu/order/assignEmployee`, {
+			const res = await fetch(`${PUBLIC_API_HOST}/order/assignEmployee`, {
 				method: 'POST',
 				headers: {
 					Authorization: `Bearer ${locals.user.token}`,
@@ -90,7 +88,7 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod(changeStatusSchema));
 
 		try {
-			const res = await fetch(`https://tu-rentals-api.webdevlimited.eu/order/complete`, {
+			const res = await fetch(`${PUBLIC_API_HOST}/order/complete`, {
 				method: 'POST',
 				headers: {
 					Authorization: `Bearer ${locals.user.token}`,
