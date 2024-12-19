@@ -5,6 +5,7 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { deleteCategorySchema, editCategorySchema, newCategorySchema } from './schema';
 import { generateUrlParams } from '$lib/utils';
 import type { Category } from '$lib/types';
+import { PUBLIC_API_HOST } from '$env/static/public';
 
 export const load: PageServerLoad = async ({ locals, fetch, url }) => {
 	if (!locals.user) {
@@ -24,14 +25,11 @@ export const load: PageServerLoad = async ({ locals, fetch, url }) => {
 	const deleteCategoryForm = await superValidate(zod(deleteCategorySchema));
 
 	try {
-		const response = await fetch(
-			`https://tu-rentals-api.webdevlimited.eu/category/search${urlParams}`,
-			{
-				headers: {
-					Authorization: `Bearer ${locals.user.token}`
-				}
+		const response = await fetch(`${PUBLIC_API_HOST}/category/search${urlParams}`, {
+			headers: {
+				Authorization: `Bearer ${locals.user.token}`
 			}
-		);
+		});
 
 		if (!response.ok) {
 			console.log(response);
@@ -62,7 +60,7 @@ export const actions: Actions = {
 		// Check if the email exists
 		try {
 			const foundCategory = await fetch(
-				`https://tu-rentals-api.webdevlimited.eu/category/search?query=${form.data.name}`,
+				`${PUBLIC_API_HOST}/category/search?query=${form.data.name}`,
 				{
 					headers: {
 						Authorization: `Bearer ${locals.user.token}`
@@ -79,7 +77,7 @@ export const actions: Actions = {
 
 		try {
 			const response = await fetch(
-				`https://tu-rentals-api.webdevlimited.eu/category?name=${encodeURIComponent(form.data.name.toUpperCase())}`,
+				`${PUBLIC_API_HOST}/category?name=${encodeURIComponent(form.data.name.toUpperCase())}`,
 				{
 					headers: {
 						Authorization: `Bearer ${locals.user.token}`,
@@ -100,75 +98,4 @@ export const actions: Actions = {
 			return { form, errorCreateCategory: true };
 		}
 	}
-
-	// deleteCategory: async ({ request, fetch, locals }) => {
-	// 	if (!locals.user || locals.user.role !== 'ADMIN') {
-	// 		return error(403, 'Forbidden');
-	// 	}
-
-	// 	const form = await superValidate(request, zod(deleteCategorySchema));
-
-	// 	if (!form.valid) {
-	// 		return fail(400, { form });
-	// 	}
-
-	// 	try {
-	// 		const response = await fetch(
-	// 			`https://tu-rentals-api.webdevlimited.eu/user/deleteCategory/${encodeURIComponent(form.data.id)}`,
-	// 			{
-	// 				headers: {
-	// 					Authorization: `Bearer ${locals.user.token}`
-	// 				},
-	// 				method: 'DELETE'
-	// 			}
-	// 		);
-
-	// 		console.log(response);
-
-	// 		if (!response.ok) {
-	// 			return { form, errorDeleteCategory: true };
-	// 		}
-
-	// 		return { form, deleteCategorySuccess: true };
-	// 	} catch (err) {
-	// 		console.log(err);
-	// 		return { form, errorDeleteCategory: true };
-	// 	}
-	// },
-
-	// editCategory: async ({ request, fetch, locals }) => {
-	// 	if (!locals.user || locals.user.role !== 'ADMIN') {
-	// 		return error(403, 'Forbidden');
-	// 	}
-
-	// 	const form = await superValidate(request, zod(editCategorySchema));
-
-	// 	if (!form.valid) {
-	// 		return fail(400, { form });
-	// 	}
-
-	// 	try {
-	// 		const response = await fetch(
-	// 			`https://tu-rentals-api.webdevlimited.eu/user/updateCategory/${form.data.id}`,
-	// 			{
-	// 				headers: {
-	// 					Authorization: `Bearer ${locals.user.token}`,
-	// 					Accept: 'application/json',
-	// 					'Content-Type': 'application/json'
-	// 				},
-	// 				method: 'POST',
-	// 				body: JSON.stringify(form.data)
-	// 			}
-	// 		);
-
-	// 		if (!response.ok) {
-	// 			return { form, errorEditCategory: true };
-	// 		}
-
-	// 		return { form, editCategorySuccess: true };
-	// 	} catch (err) {
-	// 		console.log(err);
-	// 		return { form, errorEditCategory: true };
-	// 	}
-	// }
 };

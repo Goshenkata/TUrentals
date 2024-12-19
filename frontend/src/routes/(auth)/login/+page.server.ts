@@ -5,6 +5,7 @@ import { zod } from 'sveltekit-superforms/adapters';
 import { loginSchema } from './schema';
 import { setAuthenticationCookies } from '$lib/server/authCookies';
 import type { LoginInfo } from '$lib/types';
+import { PUBLIC_API_HOST } from '$env/static/public';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) {
@@ -28,7 +29,7 @@ export const actions: Actions = {
 		let loginInfo: null | LoginInfo = null;
 
 		try {
-			const res = await fetch('https://tu-rentals-api.webdevlimited.eu/user/login', {
+			const res = await fetch(`${PUBLIC_API_HOST}/user/login`, {
 				headers: {
 					Accept: 'application/json',
 					'Content-Type': 'application/json'
@@ -41,6 +42,7 @@ export const actions: Actions = {
 			});
 
 			if (!res.ok) {
+				console.log(res);
 				return { form, wrongCreds: true };
 			}
 

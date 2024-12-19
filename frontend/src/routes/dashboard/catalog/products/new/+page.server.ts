@@ -5,6 +5,7 @@ import { fail, superValidate, withFiles } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { newProductSchema } from './schema';
 import { deserialize } from '$app/forms';
+import { PUBLIC_API_HOST } from '$env/static/public';
 
 export const load: PageServerLoad = async ({ locals, fetch }) => {
 	if (!locals.user) {
@@ -14,14 +15,11 @@ export const load: PageServerLoad = async ({ locals, fetch }) => {
 	const newProductForm = await superValidate(zod(newProductSchema));
 
 	try {
-		const categoriesResponse = await fetch(
-			'https://tu-rentals-api.webdevlimited.eu/category/search',
-			{
-				headers: {
-					Authorization: `Bearer ${locals.user.token}`
-				}
+		const categoriesResponse = await fetch(`${PUBLIC_API_HOST}/category/search`, {
+			headers: {
+				Authorization: `Bearer ${locals.user.token}`
 			}
-		);
+		});
 
 		if (!categoriesResponse.ok) {
 			console.log(categoriesResponse);
@@ -57,7 +55,7 @@ export const actions = {
 			imageData.append('file', form.data.image);
 
 			try {
-				const imgRes = await fetch('https://tu-rentals-api.webdevlimited.eu/image/upload', {
+				const imgRes = await fetch(`${PUBLIC_API_HOST}/image/upload`, {
 					headers: {
 						Authorization: `Bearer ${locals.user.token}`,
 						Accept: 'application/json'
@@ -77,7 +75,7 @@ export const actions = {
 		}
 
 		try {
-			const response = await fetch('https://tu-rentals-api.webdevlimited.eu/item/create', {
+			const response = await fetch(`${PUBLIC_API_HOST}/item/create`, {
 				headers: {
 					Authorization: `Bearer ${locals.user.token}`,
 					Accept: 'application/json',

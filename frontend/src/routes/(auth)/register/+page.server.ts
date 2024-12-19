@@ -3,6 +3,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { registerSchema } from './schema';
+import { PUBLIC_API_HOST } from '$env/static/public';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) {
@@ -30,7 +31,7 @@ export const actions: Actions = {
 		let success = false;
 
 		try {
-			const res = await fetch('https://tu-rentals-api.webdevlimited.eu/user/register', {
+			const res = await fetch(`${PUBLIC_API_HOST}/user/register`, {
 				headers: {
 					Accept: 'application/json',
 					'Content-Type': 'application/json'

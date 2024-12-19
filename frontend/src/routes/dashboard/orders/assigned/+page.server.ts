@@ -4,19 +4,18 @@ import type { PendingOrder, User } from '$lib/types';
 import { Role } from '$lib/enums';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import { assignEmployeeSchema, changeStatusSchema } from './schema';
+import { changeStatusSchema } from './schema';
+import { PUBLIC_API_HOST } from '$env/static/public';
 
 export const load: PageServerLoad = async ({ locals, fetch, url }) => {
 	if (!locals.user || (locals.user.role !== Role.MANAGER && locals.user.role !== Role.EMPLOYEE)) {
 		return error(401, 'Unauthorized');
 	}
 
-	const assignEmployeeForm = await superValidate(zod(assignEmployeeSchema));
-
 	const changeStatusForm = await superValidate(zod(changeStatusSchema));
 
 	try {
-		const ordersRes = await fetch(`https://tu-rentals-api.webdevlimited.eu/order/getAssigned`, {
+		const ordersRes = await fetch(`${PUBLIC_API_HOST}/order/getAssigned`, {
 			headers: {
 				Authorization: `Bearer ${locals.user.token}`
 			}
@@ -29,7 +28,7 @@ export const load: PageServerLoad = async ({ locals, fetch, url }) => {
 
 		const orders: PendingOrder[] = await ordersRes.json();
 
-		return { orders, assignEmployeeForm, changeStatusForm };
+		return { orders, changeStatusForm };
 	} catch (err) {
 		console.log(err);
 		return error(500, 'Failed to fetch pending orders or employees.');
@@ -45,7 +44,7 @@ export const actions: Actions = {
 		const form = await superValidate(request, zod(changeStatusSchema));
 
 		try {
-			const res = await fetch(`https://tu-rentals-api.webdevlimited.eu/order/complete`, {
+			const res = await fetch(`${PUBLIC_API_HOST}/order/complete`, {
 				method: 'POST',
 				headers: {
 					Authorization: `Bearer ${locals.user.token}`,

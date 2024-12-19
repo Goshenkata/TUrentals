@@ -7,7 +7,6 @@
 
 	let { data, form } = $props();
 
-	setContext('assignEmployeeForm', data.assignEmployeeForm);
 	setContext('changeStatusForm', data.changeStatusForm);
 
 	$effect(() => {

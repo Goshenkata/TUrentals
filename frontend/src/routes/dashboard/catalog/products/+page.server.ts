@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { generateUrlParams } from '$lib/utils';
 import type { Category, ReturnedProduct } from '$lib/types';
+import { PUBLIC_API_HOST } from '$env/static/public';
 
 export const load: PageServerLoad = async ({ locals, fetch, url }) => {
 	if (!locals.user) {
@@ -25,14 +26,11 @@ export const load: PageServerLoad = async ({ locals, fetch, url }) => {
 	const urlParams = generateUrlParams(searchParams);
 
 	try {
-		const response = await fetch(
-			`https://tu-rentals-api.webdevlimited.eu/item/search${urlParams}`,
-			{
-				headers: {
-					Authorization: `Bearer ${locals.user.token}`
-				}
+		const response = await fetch(`${PUBLIC_API_HOST}/item/search${urlParams}`, {
+			headers: {
+				Authorization: `Bearer ${locals.user.token}`
 			}
-		);
+		});
 
 		if (!response.ok) {
 			console.log(await response.json());
@@ -41,14 +39,11 @@ export const load: PageServerLoad = async ({ locals, fetch, url }) => {
 
 		const products: ReturnedProduct[] = await response.json();
 
-		const categoriesResponse = await fetch(
-			'https://tu-rentals-api.webdevlimited.eu/category/search',
-			{
-				headers: {
-					Authorization: `Bearer ${locals.user.token}`
-				}
+		const categoriesResponse = await fetch(`${PUBLIC_API_HOST}/category/search`, {
+			headers: {
+				Authorization: `Bearer ${locals.user.token}`
 			}
-		);
+		});
 
 		if (!categoriesResponse.ok) {
 			console.log(categoriesResponse);
