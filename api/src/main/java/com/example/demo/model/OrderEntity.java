@@ -26,7 +26,7 @@ public class OrderEntity {
     LocalDate returnDate;
     @OneToOne
     AddressEntity deliveryAddress;
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     OrderStatus status;
     @Column
     String note;

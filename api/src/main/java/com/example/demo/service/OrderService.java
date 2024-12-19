@@ -91,7 +91,7 @@ public class OrderService {
 
         String sessionUrl;
         try {
-            sessionUrl = stripeService.createCheckoutSession(orderEntity.getId().toString(), orderCreateDTO.getItems(), orderCreateDTO.getSuccessUrl(), orderCreateDTO.getCancelUrl());
+            sessionUrl = stripeService.createCheckoutSession(orderEntity.getId().toString(), orderCreateDTO.getItems(), orderCreateDTO.getSuccessUrl(), orderCreateDTO.getCancelUrl(), totalDays);
         } catch (Exception e) {
             log.error(e.getMessage());
             return new CreateOrderResultDTO(new MessageResponseDTO(409, "Could not create checkout session."), "");
