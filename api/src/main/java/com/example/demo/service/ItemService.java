@@ -206,4 +206,8 @@ public class ItemService {
                                 .mapToInt(OrderLineEntity::getQuantity).sum())
                 .sum();
     }
+
+    public Optional<ItemDTO> getItem(Long id) {
+        return itemRepository.findById(id).map(item -> mapper.map(item, ItemDTO.class));
+    }
 }
