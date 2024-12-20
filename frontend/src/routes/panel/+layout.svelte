@@ -37,6 +37,12 @@
 
 					<!-- Links -->
 					<div class="mt-2">
+						<a
+							href="/panel"
+							class="block px-4 py-2 text-base font-medium text-gray-900 hover:bg-gray-100"
+						>
+							Начало
+						</a>
 						{#each data.categories as category}
 							<a
 								href="/panel/category/{category.name}"
@@ -86,6 +92,9 @@
 									</svg>
 								</button>
 								<div class="text-white hidden lg:flex gap-4">
+									<a href="/panel" class="text-sm font-medium text-white hover:text-gray-100">
+										Начало
+									</a>
 									{#each data.categories as category}
 										<a
 											href="/panel/category/{category.name}"

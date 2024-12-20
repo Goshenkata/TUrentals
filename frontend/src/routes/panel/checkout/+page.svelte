@@ -1,10 +1,92 @@
 <script lang="ts">
 	import { Cart, cartStats, handleDelete } from '$lib/stores/cart.svelte';
+	import { superForm } from 'sveltekit-superforms';
+	import { zodClient } from 'sveltekit-superforms/adapters';
+	import { deliverySchema } from './schema.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import * as Form from '$lib/components/ui/form';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import CalendarIcon from 'lucide-svelte/icons/calendar';
+	import * as Popover from '$lib/components/ui/popover/index.js';
+	import { toast } from 'svelte-sonner';
+	import { untrack } from 'svelte';
+	import {
+		DateFormatter,
+		type DateValue,
+		getLocalTimeZone,
+		parseDate,
+		today
+	} from '@internationalized/date';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Calendar } from '$lib/components/ui/calendar/index.js';
+	import { cn } from '$lib/utils.js';
+
+	const { data, form } = $props();
+
+	const deliveryForm = superForm(data.deliveryForm, {
+		validators: zodClient(deliverySchema),
+		dataType: 'json',
+		resetForm: false
+	});
+
+	const { form: formData, enhance, errors, delayed } = deliveryForm;
+
+	const df = new DateFormatter('en-US', {
+		dateStyle: 'long'
+	});
+
+	$effect(() => {
+		untrack(() => {
+			$formData.items = [];
+		});
+		$Cart.forEach((cartItem) => {
+			untrack(() => {
+				$formData.items.push({
+					itemId: cartItem.product.id,
+					quantity: cartItem.quantity
+				});
+			});
+		});
+	});
+
+	let returnDate = $state<DateValue | undefined>();
+	let deliveryDate = $state<DateValue | undefined>();
+
+	let dayDifferece = $derived(
+		Math.max(
+			1,
+			Math.ceil(
+				((returnDate?.toDate(getLocalTimeZone()).getTime() ?? 0) -
+					(deliveryDate?.toDate(getLocalTimeZone()).getTime() ?? 0)) /
+					(1000 * 3600 * 24)
+			)
+		)
+	);
+
+	$effect(() => {
+		returnDate = $formData.returnDate ? parseDate($formData.returnDate) : undefined;
+	});
+
+	$effect(() => {
+		deliveryDate = $formData.deliveryDate ? parseDate($formData.deliveryDate) : undefined;
+	});
+
+	let placeholder = $state(today(getLocalTimeZone()));
+
+	$effect(() => {
+		if (form?.errorCheckout) {
+			toast.error('Възникна грешка, моля опитайте отново.');
+		}
+
+		if (form?.itemsNotAvailiable && form.items.length > 0) {
+			toast.warning(
+				'Следните артикули не са налични: ' + form.items.map((i: any) => i.item.name).join(', ')
+			);
+		}
+	});
 </script>
 
 <div class="lg:flex lg:min-h-full lg:flex-row-reverse lg:overflow-hidden m-0.5">
-	<h1 class="sr-only">Checkout</h1>
-
 	<!-- Mobile order summary -->
 	<section aria-labelledby="order-heading" class="bg-gray-50 px-4 py-6 sm:px-6 lg:hidden">
 		<div class="mx-auto max-w-lg">
@@ -45,13 +127,14 @@
 										<div class="flex justify-between">
 											<dt>Общо</dt>
 											<dd class="text-gray-900">
-												{(cartItem.quantity * cartItem.product.pricePerDay).toLocaleString(
-													'bg-BG',
-													{
-														style: 'currency',
-														currency: 'BGN'
-													}
-												)}
+												{(
+													cartItem.quantity *
+													cartItem.product.pricePerDay *
+													dayDifferece
+												).toLocaleString('bg-BG', {
+													style: 'currency',
+													currency: 'BGN'
+												})}
 											</dd>
 										</div>
 									</dl>
@@ -68,6 +151,24 @@
 				</ul>
 			</div>
 
+			<p
+				class="mt-6 flex items-center justify-between border-t border-gray-200 pt-6 text-sm font-medium text-gray-900"
+			>
+				<span class="text-base">Дни на заемане</span>
+				<span class="text-base">{dayDifferece}</span>
+			</p>
+
+			<p
+				class="mt-6 flex items-center justify-between border-t border-gray-200 pt-6 text-sm font-medium text-gray-900"
+			>
+				<span class="text-base">Междинно</span>
+				<span class="text-base"
+					>{dayDifferece} дни * {$cartStats.total.toLocaleString('bg-BG', {
+						style: 'currency',
+						currency: 'BGN'
+					})}</span
+				>
+			</p>
 			<p
 				class="mt-6 flex items-center justify-between border-t border-gray-200 pt-6 text-sm font-medium text-gray-900"
 			>
@@ -116,7 +217,11 @@
 								<div class="flex justify-between">
 									<dt>Общо</dt>
 									<dd class="text-gray-900">
-										{(cartItem.quantity * cartItem.product.pricePerDay).toLocaleString('bg-BG', {
+										{(
+											cartItem.quantity *
+											cartItem.product.pricePerDay *
+											dayDifferece
+										).toLocaleString('bg-BG', {
 											style: 'currency',
 											currency: 'BGN'
 										})}
@@ -138,9 +243,31 @@
 		<div class="sticky bottom-0 flex-none border-t border-gray-200 bg-gray-50 p-6">
 			<dl class="mt-10 space-y-6 text-sm font-medium text-gray-500">
 				<div class="flex items-center justify-between border-t border-gray-200 pt-6 text-gray-900">
+					<dt class="text-base">Дни на заемане</dt>
+					<dd class="text-base">
+						{dayDifferece}
+					</dd>
+				</div>
+			</dl>
+			<dl class="mt-6 space-y-6 text-sm font-medium text-gray-500">
+				<div class="flex items-center justify-between border-t border-gray-200 pt-6 text-gray-900">
+					<dt class="text-base">Междинно</dt>
+					<dd class="text-base">
+						{dayDifferece} дни * {$cartStats.total.toLocaleString('bg-BG', {
+							style: 'currency',
+							currency: 'BGN'
+						})}
+					</dd>
+				</div>
+			</dl>
+			<dl class="mt-6 space-y-6 text-sm font-medium text-gray-500">
+				<div class="flex items-center justify-between border-t border-gray-200 pt-6 text-gray-900">
 					<dt class="text-base">Тотал</dt>
 					<dd class="text-base">
-						{$cartStats.total.toLocaleString('bg-BG', { style: 'currency', currency: 'BGN' })}
+						{($cartStats.total * dayDifferece).toLocaleString('bg-BG', {
+							style: 'currency',
+							currency: 'BGN'
+						})}
 					</dd>
 				</div>
 			</dl>
@@ -153,110 +280,196 @@
 		class="flex-auto overflow-y-auto px-4 pb-16 pt-12 sm:px-6 sm:pt-16 lg:px-8 lg:pb-24 lg:pt-0"
 	>
 		<div class="mx-auto max-w-lg">
-			<form class="mt-6">
-				<!-- <div class="grid grid-cols-12 gap-x-4 gap-y-6">
-					<div class="col-span-full">
-						<label for="email-address" class="block text-sm/6 font-medium text-gray-700"
-							>Email address</label
-						>
-						<div class="mt-2">
-							<input
-								type="email"
-								id="email-address"
-								name="email-address"
-								autocomplete="email"
-								class="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-							/>
-						</div>
-					</div>
+			<form class="mt-6" method="POST" action="?/checkout" use:enhance>
+				<div class="grid md:gap-6 md:grid-cols-2">
+					<Form.Field form={deliveryForm} name="countryName">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label>Държава</Form.Label>
+								<Input
+									{...props}
+									disabled={$delayed}
+									required
+									bind:value={$formData.countryName}
+									type="text"
+								/>
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
 
-					<div class="col-span-full">
-						<label for="name-on-card" class="block text-sm/6 font-medium text-gray-700"
-							>Name on card</label
-						>
-						<div class="mt-2">
-							<input
-								type="text"
-								id="name-on-card"
-								name="name-on-card"
-								autocomplete="cc-name"
-								class="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-							/>
-						</div>
-					</div>
-
-					<div class="col-span-full">
-						<label for="card-number" class="block text-sm/6 font-medium text-gray-700"
-							>Card number</label
-						>
-						<div class="mt-2">
-							<input
-								type="text"
-								id="card-number"
-								name="card-number"
-								autocomplete="cc-number"
-								class="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-							/>
-						</div>
-					</div>
-
-					<div class="col-span-8 sm:col-span-9">
-						<label for="expiration-date" class="block text-sm/6 font-medium text-gray-700"
-							>Expiration date (MM/YY)</label
-						>
-						<div class="mt-2">
-							<input
-								type="text"
-								name="expiration-date"
-								id="expiration-date"
-								autocomplete="cc-exp"
-								class="block w-full rounded-md bg-white px-3 py-2 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
-							/>
-						</div>
-					</div>
+					<Form.Field form={deliveryForm} name="stateName">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label>Област</Form.Label>
+								<Input
+									{...props}
+									disabled={$delayed}
+									required
+									bind:value={$formData.stateName}
+									type="text"
+								/>
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
 				</div>
+				<div class="grid md:gap-6 md:grid-cols-2">
+					<Form.Field form={deliveryForm} name="townName">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label>Град</Form.Label>
+								<Input
+									{...props}
+									disabled={$delayed}
+									required
+									bind:value={$formData.townName}
+									type="text"
+								/>
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
 
-				<div class="mt-6 flex gap-3">
-					<div class="flex h-5 shrink-0 items-center">
-						<div class="group grid size-4 grid-cols-1">
-							<input
-								id="same-as-shipping"
-								name="same-as-shipping"
-								type="checkbox"
-								checked
-								class="col-start-1 row-start-1 appearance-none rounded border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
+					<Form.Field form={deliveryForm} name="postCodeCode">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label>Пощенски код</Form.Label>
+								<Input
+									{...props}
+									disabled={$delayed}
+									required
+									bind:value={$formData.postCodeCode}
+									type="text"
+								/>
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+					</Form.Field>
+				</div>
+				<Form.Field form={deliveryForm} name="street">
+					<Form.Control>
+						{#snippet children({ props })}
+							<Form.Label>Улица</Form.Label>
+							<Input
+								{...props}
+								disabled={$delayed}
+								required
+								bind:value={$formData.street}
+								type="text"
 							/>
-							<svg
-								class="pointer-events-none col-start-1 row-start-1 size-3.5 self-center justify-self-center stroke-white group-has-[:disabled]:stroke-gray-950/25"
-								viewBox="0 0 14 14"
-								fill="none"
-							>
-								<path
-									class="opacity-0 group-has-[:checked]:opacity-100"
-									d="M3 8L6 11L11 3.5"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								/>
-								<path
-									class="opacity-0 group-has-[:indeterminate]:opacity-100"
-									d="M3 7H11"
-									stroke-width="2"
-									stroke-linecap="round"
-									stroke-linejoin="round"
-								/>
-							</svg>
-						</div>
-					</div>
-					<label for="same-as-shipping" class="text-sm font-medium text-gray-900"
-						>Billing address is the same as shipping address</label
-					>
-				</div> -->
+						{/snippet}
+					</Form.Control>
+					<Form.FieldErrors />
+				</Form.Field>
 
+				<Form.Field form={deliveryForm} name="description">
+					<Form.Control>
+						{#snippet children({ props })}
+							<Form.Label>Описание</Form.Label>
+							<Textarea
+								{...props}
+								disabled={$delayed}
+								required
+								bind:value={$formData.description}
+							/>
+						{/snippet}
+					</Form.Control>
+					<Form.FieldErrors />
+				</Form.Field>
+				<div class="mt-4 grid md:gap-6 md:grid-cols-2">
+					<Form.Field form={deliveryForm} name="deliveryDate" class="flex flex-col ">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label>Дата за доставка</Form.Label>
+								<Popover.Root>
+									<Popover.Trigger {...props}>
+										{#snippet child({ props })}
+											<Button
+												variant="outline"
+												class={cn(
+													' justify-start pl-4 text-left font-normal',
+													!deliveryDate && 'text-muted-foreground'
+												)}
+												{...props}
+											>
+												{deliveryDate
+													? df.format(deliveryDate.toDate(getLocalTimeZone()))
+													: 'Изберете дата'}
+												<CalendarIcon class="ml-auto size-4 opacity-50" />
+											</Button>
+										{/snippet}
+									</Popover.Trigger>
+									<Popover.Content class="w-auto p-0" side="top">
+										<Calendar
+											type="single"
+											value={deliveryDate}
+											bind:placeholder
+											calendarLabel="Date"
+											minValue={today(getLocalTimeZone()).add({ days: 1 })}
+											onValueChange={(v) => {
+												if (v) {
+													$formData.deliveryDate = v.toString();
+												} else {
+													$formData.deliveryDate = '';
+												}
+											}}
+										/>
+									</Popover.Content>
+								</Popover.Root>
+								<Form.FieldErrors />
+							{/snippet}
+						</Form.Control>
+					</Form.Field>
+
+					<Form.Field form={deliveryForm} name="returnDate" class="flex flex-col ">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label>Дата за връщане</Form.Label>
+								<Popover.Root>
+									<Popover.Trigger {...props}>
+										{#snippet child({ props })}
+											<Button
+												variant="outline"
+												class={cn(
+													'justify-start pl-4 text-left font-normal',
+													!returnDate && 'text-muted-foreground'
+												)}
+												{...props}
+											>
+												{returnDate
+													? df.format(returnDate.toDate(getLocalTimeZone()))
+													: 'Изберете дата'}
+												<CalendarIcon class="ml-auto size-4 opacity-50" />
+											</Button>
+										{/snippet}
+									</Popover.Trigger>
+									<Popover.Content class="w-auto p-0" side="top">
+										<Calendar
+											type="single"
+											value={returnDate}
+											bind:placeholder
+											minValue={deliveryDate || today(getLocalTimeZone())}
+											calendarLabel="Date"
+											onValueChange={(v) => {
+												if (v) {
+													$formData.returnDate = v.toString();
+												} else {
+													$formData.returnDate = '';
+												}
+											}}
+										/>
+									</Popover.Content>
+								</Popover.Root>
+								<Form.FieldErrors />
+							{/snippet}
+						</Form.Control>
+					</Form.Field>
+				</div>
 				<button
 					type="submit"
 					class="mt-6 w-full rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-					>Плати {$cartStats.total.toLocaleString('bg-BG', {
+					>Плати {($cartStats.total * dayDifferece).toLocaleString('bg-BG', {
 						style: 'currency',
 						currency: 'BGN'
 					})}</button

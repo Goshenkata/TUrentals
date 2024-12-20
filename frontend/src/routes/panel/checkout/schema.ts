@@ -15,8 +15,8 @@ export const deliverySchema = z.object({
 		})
 	),
 
-	deliveryDate: z.date({ required_error: 'Полето е задължително.' }),
-	returnDate: z.date({ required_error: 'Полето е задължително.' })
+	deliveryDate: z.string({ required_error: 'Полето е задължително.' }),
+	returnDate: z.string({ required_error: 'Полето е задължително.' })
 });
 
 export type DeliverySchema = z.infer<typeof deliverySchema>;
