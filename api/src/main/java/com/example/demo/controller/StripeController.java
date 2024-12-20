@@ -6,6 +6,7 @@ import com.stripe.model.Event;
 import com.stripe.model.PaymentIntent;
 import com.stripe.net.Webhook;
 import org.aspectj.bridge.Message;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/stripe")
 public class StripeController {
+
+    @Value("${stripe.webhook.secret}")
+    private String webhookSecret;
 
     private final StripeService stripeService;
 
@@ -28,7 +32,8 @@ public class StripeController {
         Event event;
         try {
             // Validate the webhook signature
-            event = Webhook.constructEvent(payload, sigHeader, "whsec_9cc35b86e9a840f8b9c21507fb527ad6bef85a19aec8b9c88dcd0b637b8d4881");
+            event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
+
         } catch (Exception e) {
             System.out.println("Webhook signature validation failed.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
