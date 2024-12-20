@@ -64,3 +64,8 @@ type PendingOrder = {
 type AssignedOrder = PendingOrder & {
 	assignenedTo: Omit<NonNullableUser, 'token'>;
 };
+
+type CartProduct = {
+	product: ReturnedProduct;
+	quantity: number;
+};

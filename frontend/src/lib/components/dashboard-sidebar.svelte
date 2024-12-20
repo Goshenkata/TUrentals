@@ -14,7 +14,9 @@
 		Package,
 		CircleDashed,
 		CalendarClock,
-		CalendarCheck
+		CalendarCheck,
+		PackageOpen,
+		CalendarSync
 	} from 'lucide-svelte/icons';
 	import { page } from '$app/stores';
 	import { Badge } from './ui/badge';
@@ -100,6 +102,19 @@
 													{/snippet}
 												</Sidebar.MenuSubButton>
 											</Sidebar.MenuSubItem>
+
+											<!-- <Sidebar.MenuSubItem>
+												<Sidebar.MenuSubButton
+													isActive={$page.url.pathname === '/dashboard/orders/need-attention'}
+												>
+													{#snippet child({ props })}
+														<a href="/dashboard/orders/need-attention" {...props}>
+															<CalendarSync />
+															<span>Очакващи преглед</span>
+														</a>
+													{/snippet}
+												</Sidebar.MenuSubButton>
+											</Sidebar.MenuSubItem> -->
 										{/if}
 
 										{#if user?.role === 'EMPLOYEE'}
@@ -121,6 +136,19 @@
 							</Sidebar.MenuItem>
 						{/snippet}
 					</Collapsible.Root>
+				{/if}
+
+				{#if user?.role === 'MANAGER'}
+					<Sidebar.MenuItem>
+						<Sidebar.MenuButton isActive={$page.url.pathname.includes('/dashboard/inventory')}>
+							{#snippet child({ props })}
+								<a href="/dashboard/inventory" {...props}>
+									<PackageOpen />
+									<span>Инвентар</span>
+								</a>
+							{/snippet}
+						</Sidebar.MenuButton>
+					</Sidebar.MenuItem>
 				{/if}
 
 				{#if user?.role === 'MANAGER'}

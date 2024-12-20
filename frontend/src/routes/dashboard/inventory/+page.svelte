@@ -1,5 +1,5 @@
 <script lang="ts">
-	import CategoriesTable from './orders-table.svelte';
+	import ItemsTable from './items-table.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { ChevronLeft } from 'lucide-svelte';
 	import { setContext } from 'svelte';
@@ -7,15 +7,15 @@
 
 	let { data, form } = $props();
 
-	setContext('changeStatusForm', data.changeStatusForm);
+	setContext('changeQuantityForm', data.changeQuantityForm);
 
 	$effect(() => {
-		if (form?.changeStatusSuccess) {
-			toast.success('Успешно променен статус.');
+		if (form?.changeQuantitySuccess) {
+			toast.success('Успешно променено количество.');
 		}
 
-		if (form?.errorChangeStatus) {
-			toast.error('Неуспешна промяна на статус.');
+		if (form?.errorChangeQuantity) {
+			toast.error('Неуспешна промяна на количество.');
 		}
 	});
 </script>
@@ -28,14 +28,14 @@
 			<ChevronLeft class="h-4 w-4" />
 			<span class="sr-only">Назад</span>
 		</Button>
-		<h1 class="text-lg font-semibold md:text-2xl">Мои поръчки</h1>
+		<h1 class="text-lg font-semibold md:text-2xl">Инвентар</h1>
 	</div>
 </div>
 
-{#if data.orders && data.orders.length > 0}
+{#if data.lineItems && data.lineItems.length > 0}
 	<div class="">
-		{#key data.orders}
-			<CategoriesTable orders={data.orders}></CategoriesTable>
+		{#key data.lineItems}
+			<ItemsTable lineItems={data.lineItems}></ItemsTable>
 		{/key}
 	</div>
 {/if}
