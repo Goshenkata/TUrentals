@@ -32,12 +32,13 @@ public class DBInit implements CommandLineRunner {
     @Value("${admin.password}")
     private String adminPassword;
 
+
     @Override
     public void run(String... args) {
-        initUsers();
+        initDB();
     }
 
-    private void initUsers() {
+    private void initDB() {
         if (userRepository.count() == 0) {
             List<UserEntity> users = List.of(
                     new UserEntity("Admin", "Adminov", adminEmail, passwordEncoder.encode(adminPassword), "08142035434", RoleEnum.ADMIN),
