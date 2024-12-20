@@ -41,16 +41,18 @@ public class WarehouseService {
         List<OrderDTO> affectedOrders = new ArrayList<>();
         ItemEntity item = itemRepository.findById(itemAvailibilityChangeDTO.getItemId()).orElseThrow(() -> new IllegalArgumentException("Item not found"));
         WarehouseLineEntity warehouseQuantity = warehouseRepository.findByItem(item);
+        item.setCurrentQuantity(itemAvailibilityChangeDTO.getNewQuantity());
         // adding
         if (itemAvailibilityChangeDTO.getNewQuantity() >= warehouseQuantity.getQuantity()) {
+            warehouseQuantity.setQuantity(itemAvailibilityChangeDTO.getNewQuantity());
+            warehouseRepository.save(warehouseQuantity);
+            itemRepository.save(item);
             return new ChangeQuantityResult(
                     itemAvailibilityChangeDTO.getItemId(),
                     itemAvailibilityChangeDTO.getNewQuantity(),
                     true,
                     affectedOrders);
         }
-        int diff = warehouseQuantity.getQuantity() - itemAvailibilityChangeDTO.getNewQuantity();
-        item.setCurrentQuantity(item.getCurrentQuantity() - diff);
 
         // removing
         affectedOrders = getOrdersThatCannotBeFulfilled(item);

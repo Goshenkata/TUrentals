@@ -48,7 +48,7 @@ public class StripeService {
         this.orderLineRepository = orderLineRepository;
     }
 
-    public String createCheckoutSession(String orderId, List<ItemNumberPairDTO> orderLines, String successUrl, String cancelUrl) throws Exception {
+    public String createCheckoutSession(String orderId, List<ItemNumberPairDTO> orderLines, String successUrl, String cancelUrl, int totalDays) throws Exception {
         // Start building the session params
         SessionCreateParams.Builder sessionBuilder = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
@@ -68,7 +68,7 @@ public class StripeService {
                 throw new NullPointerException("Item has no price per day. Item id: " + item.getId());
             }
 
-            long priceInStotinki = Math.round(item.getPricePerDay().multiply(BigDecimal.valueOf(100)).longValueExact()); // Convert BGN leva to stotinki
+            long priceInStotinki = Math.round(item.getPricePerDay().multiply(BigDecimal.valueOf(100).multiply(BigDecimal.valueOf(totalDays))).longValueExact()); // Convert BGN leva to stotinki
 
             // Add the item to the session
             sessionBuilder.addLineItem(

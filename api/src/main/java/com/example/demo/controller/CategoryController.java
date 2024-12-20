@@ -27,6 +27,7 @@ public class CategoryController {
 
     @DeleteMapping("")
     @Operation(summary = "Delete a category by name")
+    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
     public ResponseEntity<MessageResponseDTO> deleteCategory(@RequestParam String name) {
         MessageResponseDTO response = categoryService.deleteCategory(name);
         return ResponseEntity.status(response.status()).body(response);
@@ -34,7 +35,6 @@ public class CategoryController {
 
     @GetMapping("search")
     @Operation(summary = "returns all categories or fuzzy search by name")
-    @PreAuthorize("hasAnyAuthority('MANAGER', 'ADMIN')")
     ResponseEntity<List<CategoryDTO>> searchCategories(@RequestParam(required = false) String query) {
         return ResponseEntity.ok(categoryService.searchCategories(query));
     }

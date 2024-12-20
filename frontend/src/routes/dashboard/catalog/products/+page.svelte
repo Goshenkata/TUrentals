@@ -47,7 +47,7 @@
 	class="z-50 -mx-2 flex items-center justify-between gap-4 bg-background px-2 py-1.5 md:sticky md:top-0 md:-mx-4 md:px-4 lg:-mx-6 lg:px-6"
 >
 	<div class="flex items-center justify-between gap-4">
-		<Button variant="outline" size="icon" class="h-7 w-7 flex-shrink-0" href="/control-centre-v1">
+		<Button variant="outline" size="icon" class="h-7 w-7 flex-shrink-0" href="/dashboard">
 			<ChevronLeft class="h-4 w-4" />
 			<span class="sr-only">Назад</span>
 		</Button>
