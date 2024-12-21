@@ -4,6 +4,7 @@
 	import { ChevronLeft } from 'lucide-svelte';
 	import { setContext } from 'svelte';
 	import { toast } from 'svelte-sonner';
+	import { goto } from '$app/navigation';
 
 	let { data, form } = $props();
 
@@ -16,6 +17,17 @@
 
 		if (form?.errorChangeQuantity) {
 			toast.error('Неуспешна промяна на количество.');
+		}
+
+		if (form?.affectedOrders) {
+			toast.warning('Успешно променено количество. Има засегнати поръчки.', {
+				action: {
+					label: 'Виж поръчките',
+					onClick: async () => {
+						await goto('/dashboard/orders/need-attention');
+					}
+				}
+			});
 		}
 	});
 </script>

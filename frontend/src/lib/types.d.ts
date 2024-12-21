@@ -65,6 +65,11 @@ type AssignedOrder = PendingOrder & {
 	assignenedTo: Omit<NonNullableUser, 'token'>;
 };
 
+type OrderThatNeedsAttention = {
+	order: PendingOrder;
+	missingItemsQuantity: OrderLineItem[];
+};
+
 type CartProduct = {
 	product: ReturnedProduct;
 	quantity: number;

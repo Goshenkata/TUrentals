@@ -22,8 +22,20 @@
 			href="/dashboard/orders/pending"
 			class="border rounded-lg p-4 shadow-md hover:border-indigo-400 transition-colors"
 		>
-			<h2 class="text-xl font-semibold">Непотвърдени поръчки</h2>
+			<h2 class="text-xl font-semibold">Чакащи поръчки</h2>
 			<p class="text-sm text-gray-500">Вижте и управлявайте непотвърдените поръчки</p>
+		</a>
+	{/if}
+
+	{#if data.user?.role === 'MANAGER'}
+		<a
+			href="/dashboard/orders/need-attention"
+			class="border rounded-lg p-4 shadow-md hover:border-indigo-400 transition-colors"
+		>
+			<h2 class="text-xl font-semibold">Поръчки очакващи преглед</h2>
+			<p class="text-sm text-gray-500">
+				Вижте и управлявайте поръчки с конфликт на наличните артикули
+			</p>
 		</a>
 	{/if}
 

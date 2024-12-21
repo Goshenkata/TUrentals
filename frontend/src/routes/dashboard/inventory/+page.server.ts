@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import type { OrderLineItem, PendingOrder, User } from '$lib/types';
+import type { OrderLineItem } from '$lib/types';
 import { Role } from '$lib/enums';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
@@ -43,8 +43,6 @@ export const actions: Actions = {
 
 		const form = await superValidate(request, zod(changeQuantitySchema));
 
-		console.log(form.data);
-
 		try {
 			const res = await fetch(`${PUBLIC_API_HOST}/warehouse/setQuantity`, {
 				method: 'POST',
@@ -58,6 +56,12 @@ export const actions: Actions = {
 			if (!res.ok) {
 				console.log(res);
 				return { form, errorChangeQuantity: true };
+			}
+
+			const itemsRes = await res.json();
+
+			if (itemsRes?.affectedOrders?.length > 0) {
+				return { form, affectedOrders: itemsRes.affectedOrders };
 			}
 
 			return { form, changeQuantitySuccess: true };

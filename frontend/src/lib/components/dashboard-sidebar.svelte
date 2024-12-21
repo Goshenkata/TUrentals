@@ -102,7 +102,7 @@
 												</Sidebar.MenuSubButton>
 											</Sidebar.MenuSubItem>
 
-											<!-- <Sidebar.MenuSubItem>
+											<Sidebar.MenuSubItem>
 												<Sidebar.MenuSubButton
 													isActive={$page.url.pathname === '/dashboard/orders/need-attention'}
 												>
@@ -113,7 +113,7 @@
 														</a>
 													{/snippet}
 												</Sidebar.MenuSubButton>
-											</Sidebar.MenuSubItem> -->
+											</Sidebar.MenuSubItem>
 										{/if}
 
 										{#if user?.role === 'EMPLOYEE'}
