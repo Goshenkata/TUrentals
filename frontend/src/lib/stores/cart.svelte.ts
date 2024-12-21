@@ -6,6 +6,11 @@ export const Cart = writable<CartProduct[]>([]);
 
 export const IsCartOpen = writable(false);
 
+export const emptyCart = () => {
+	Cart.set([]);
+	localStorage.removeItem('cart');
+};
+
 export const addToCart = (product: ReturnedProduct, qty: number) => {
 	Cart.update((currentCart) => {
 		console.log(currentCart);

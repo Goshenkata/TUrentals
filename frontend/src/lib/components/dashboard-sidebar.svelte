@@ -16,7 +16,8 @@
 		CalendarClock,
 		CalendarCheck,
 		PackageOpen,
-		CalendarSync
+		CalendarSync,
+		ShoppingCart
 	} from 'lucide-svelte/icons';
 	import { page } from '$app/stores';
 	import { Badge } from './ui/badge';
@@ -42,11 +43,9 @@
 				<a href="/">
 					<Sidebar.MenuButton size="lg">
 						<div class="flex aspect-square size-10 items-center justify-center rounded-lg">
-							<Skeleton class="h-10 w-10 rounded-full" />
+							<ShoppingCart class="h-5 w-5 mr-2" />
 						</div>
-						<div class="grid flex-1 text-left text-sm leading-tight">
-							<Skeleton class="h-[1rem] w-[10rem]" />
-						</div>
+						<div class="grid flex-1 text-left text-lg font-bold leading-tight">Tu rentals</div>
 					</Sidebar.MenuButton>
 				</a>
 			</Sidebar.MenuItem>

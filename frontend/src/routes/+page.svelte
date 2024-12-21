@@ -46,19 +46,14 @@
 			</div>
 			<div class="mx-auto max-w-7xl px-6 pb-24 pt-10 sm:pb-32 lg:flex lg:px-8 lg:py-40">
 				<div class="mx-auto max-w-2xl shrink-0 lg:mx-0 lg:pt-8">
-					<!-- <img
-						class="h-11"
-						src="https://tailwindui.com/plus/img/logos/mark.svg?color=indigo&shade=500"
-						alt="Tu Rentals"
-					/> -->
 					<h1
 						class="mt-10 text-pretty text-5xl font-semibold tracking-tight text-white sm:text-7xl"
 					>
 						Оборудване и техника за вашето събитие
 					</h1>
 					<p class="mt-8 text-pretty text-lg font-medium text-gray-400 sm:text-xl/8">
-						Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat
-						commodo. Elit sunt amet fugiat veniam occaecat.
+						Доверете се на нас за вашето събитие. Ние предлагаме оборудване и техника за всякакви
+						събития. Ние сме тук, за да направим вашето събитие незабравимо.
 					</p>
 					<div class="mt-10 flex items-center gap-x-6">
 						{#if !data.user}
@@ -71,6 +66,11 @@
 								>Вход <span aria-hidden="true">→</span></a
 							>
 						{:else}
+							<a
+								href={data.user.role === 'USER' ? '/panel' : '/dashboard'}
+								class="rounded-md bg-indigo-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400"
+								>Панел</a
+							>
 							<a href="/logout" class="text-sm/6 font-semibold text-white"
 								>Изход <span aria-hidden="true">→</span></a
 							>

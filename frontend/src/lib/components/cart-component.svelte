@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { navigating } from '$app/stores';
 	import CartItem from '$lib/components/cart-item.svelte';
 	import { Cart, cartStats, IsCartOpen } from '$lib/stores/cart.svelte.js';
 	import type { CartProduct } from '$lib/types.js';

@@ -1,14 +1,23 @@
 <script lang="ts">
 	import CartComponent from '$lib/components/cart-component.svelte';
+	import { CircleUser } from 'lucide-svelte/icons';
+	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import { navigating } from '$app/stores';
+	import { IsCartOpen } from '$lib/stores/cart.svelte.js';
 
 	let { children, data } = $props();
 
-	let openMenu = $state(false);
+	$effect(() => {
+		if ($navigating) {
+			$IsCartOpen = false;
+		}
+	});
 </script>
 
 <div class="bg-white">
 	<div class="relative z-40 lg:hidden" role="dialog" aria-modal="true">
-		{#if openMenu}
+		{#if $IsCartOpen}
 			<div class="fixed inset-0 bg-black/25" aria-hidden="true"></div>
 			<div class="fixed inset-0 z-40 flex">
 				<div
@@ -18,7 +27,7 @@
 						<button
 							type="button"
 							class="-m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400"
-							onclick={() => (openMenu = false)}
+							onclick={() => ($IsCartOpen = false)}
 						>
 							<span class="sr-only">Close menu</span>
 							<svg
@@ -72,7 +81,7 @@
 								<button
 									type="button"
 									class="lg:hidden -ml-2 p-2 text-white"
-									onclick={() => (openMenu = true)}
+									onclick={() => ($IsCartOpen = true)}
 								>
 									<span class="sr-only">Open menu</span>
 									<svg
@@ -109,6 +118,36 @@
 										<CartComponent></CartComponent>
 									</div>
 								</div>
+								<DropdownMenu.Root>
+									<DropdownMenu.Trigger
+										class="rounded-full text-white {buttonVariants({
+											variant: 'ghost',
+											size: 'icon'
+										})}"
+									>
+										<CircleUser class="h-5 w-5" />
+										<span class="sr-only">Покажи/скрий менюто</span>
+									</DropdownMenu.Trigger>
+									<DropdownMenu.Content align="end">
+										<DropdownMenu.Label>
+											<div>
+												<div>{data.user.firstName} {data.user.lastName}</div>
+												<div class="text-xs text-muted-foreground">
+													{data.user.email}
+												</div>
+											</div>
+										</DropdownMenu.Label>
+										<DropdownMenu.Separator />
+
+										<Button size="sm" class="w-full" variant="ghost" href="/"
+											>Към началната страница</Button
+										>
+
+										<DropdownMenu.Separator />
+
+										<Button size="sm" class="w-full" href="/logout">Изход</Button>
+									</DropdownMenu.Content>
+								</DropdownMenu.Root>
 							</div>
 						</div>
 					</div>

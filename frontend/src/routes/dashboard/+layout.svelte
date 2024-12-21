@@ -16,18 +16,7 @@
 		<header class="flex h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
 			<Sidebar.Trigger class="-ml-1" />
 			<Separator orientation="vertical" class="mr-2 h-4" />
-			<div class="w-full flex-1">
-				<form>
-					<div class="relative">
-						<Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-						<Input
-							type="search"
-							placeholder="Търси резервации, партньори, обекти..."
-							class="w-full appearance-none bg-background pl-8 shadow-none md:w-2/3 lg:w-1/3"
-						/>
-					</div>
-				</form>
-			</div>
+			<div class="w-full flex-1"></div>
 
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger
@@ -45,6 +34,9 @@
 							</div>
 						</div>
 					</DropdownMenu.Label>
+					<DropdownMenu.Separator />
+
+					<Button size="sm" class="w-full" variant="ghost" href="/">Към началната страница</Button>
 					<DropdownMenu.Separator />
 
 					<Button size="sm" class="w-full" href="/logout">Изход</Button>
