@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 @NoArgsConstructor
 @Data
@@ -23,5 +24,17 @@ public class ItemDTO {
             return sortBy == SortBy.PRICE_ASC ? o1.getPricePerDay().compareTo(o2.getPricePerDay()) : o2.getPricePerDay().compareTo(o1.getPricePerDay());
         }
         return 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemDTO itemDTO = (ItemDTO) o;
+        return Objects.equals(id, itemDTO.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

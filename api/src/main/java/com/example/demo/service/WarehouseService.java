@@ -5,6 +5,7 @@ import com.example.demo.dto.request.ItemAvailibilityChangeDTO;
 import com.example.demo.dto.response.*;
 import com.example.demo.model.ItemEntity;
 import com.example.demo.model.OrderEntity;
+import com.example.demo.model.availability.OrderLineEntity;
 import com.example.demo.model.availability.WarehouseLineEntity;
 import com.example.demo.repository.ItemRepository;
 import com.example.demo.repository.OrderRepository;
@@ -16,12 +17,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.view.BeanNameViewResolver;
 
 import java.beans.Transient;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -33,6 +33,7 @@ public class WarehouseService {
     private final OrderRepository orderRepository;
     private final ModelMapper modelMapper;
     private final UserRepository userRepository;
+    private final BeanNameViewResolver beanNameViewResolver;
 
 
     //todo bug fix, seperate the check orders that cannot be fulfilled into a different endpoint
@@ -123,16 +124,33 @@ public class WarehouseService {
     }
 
     public List<OrdersThatNeedAttentionDTO> getOrdersThatNeedAttention() {
-        List<OrdersThatNeedAttentionDTO> ordersThatNeedAttention = new LinkedList<>();
-        for (ItemEntity itemEntity : itemRepository.findAll()) {
-            var dto = new OrdersThatNeedAttentionDTO();
-            dto.setItemId(itemEntity.getId());
-            dto.setOrders(getOrdersThatCannotBeFulfilled(itemEntity).stream().map(OrderDTO::getId).toList());
-            ordersThatNeedAttention.add(dto);
+        Map<OrderDTO, List<OrderLineDTO>> map = new HashMap<>();
+        List<ItemEntity> allItems = itemRepository.findAll();
+        for (ItemEntity itemEntity : allItems) {
+            List<OrderDTO> ordersThatCannotBeFulfilled = getOrdersThatCannotBeFulfilled(itemEntity);
+            for (OrderDTO orderDTO : ordersThatCannotBeFulfilled) {
+                //get the qunatity of the item in the order
+                int quantityInOrder = orderDTO.getLines().
+                        stream()
+                        .filter(orderLineDTO -> orderLineDTO.getItem().getId().equals(itemEntity.getId()))
+                        .findFirst()
+                        .get()
+                        .getQuantity();
+                //get the quantity in the warehouse
+                int quantityInWarehouse = warehouseRepository.findByItem(itemEntity).getQuantity();
+                //get the difference
+                int difference = quantityInOrder - quantityInWarehouse;
+                OrderLineDTO diff = new OrderLineDTO(modelMapper.map(itemEntity, ItemDTO.class), difference);
+
+                if (!map.containsKey(orderDTO)) {
+                    map.put(orderDTO, new ArrayList<>());
+                }
+                map.get(orderDTO).add(diff);
+            }
         }
-        return ordersThatNeedAttention
+        return map.entrySet()
                 .stream()
-                .filter(ordersThatNeedAttentionDTO -> !ordersThatNeedAttentionDTO.getOrders().isEmpty())
+                .map(entry -> new OrdersThatNeedAttentionDTO(entry.getKey(), entry.getValue()))
                 .toList();
     }
 }

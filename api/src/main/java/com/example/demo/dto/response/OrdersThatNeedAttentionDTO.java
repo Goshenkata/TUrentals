@@ -10,6 +10,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrdersThatNeedAttentionDTO {
-    Long itemId;
-    List<Long> orders;
+    OrderDTO order;
+    List<OrderLineDTO> missingItemsQuantity;
 }
