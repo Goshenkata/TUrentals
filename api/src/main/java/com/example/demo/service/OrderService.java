@@ -170,6 +170,10 @@ public class OrderService {
                             "https://www.seedCancelurl")
                     , email
             );
+            orderRepository.findAll().forEach(orderEntity -> {
+                orderEntity.setStatus(OrderStatus.PENDING);
+                orderRepository.save(orderEntity);
+            });
 //            createOrder(
 //                    new OrderCreateDTO(
 //                            LocalDate.now(),
