@@ -82,10 +82,10 @@
 				>
 					<div class="max-w-3xl flex-none sm:max-w-5xl lg:max-w-none">
 						<img
-							src="https://tailwindui.com/plus/img/component-images/dark-project-app-screenshot.png"
+							src="/panel-screenshot.jpg"
 							alt="App screenshot"
-							width="2432"
-							height="1442"
+							width="3840"
+							height="1852"
 							class="w-[76rem] rounded-md bg-white/5 shadow-2xl ring-1 ring-white/10"
 						/>
 					</div>
